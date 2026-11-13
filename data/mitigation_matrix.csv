@@ -1,0 +1,16 @@
+risk,level,strategy,lever,rationale
+An increase in property taxes,Low,Apply for tax reassessment,Low-cost action,Cost-effective and low-effort method to manage tax exposure without impacting rental rates.
+An increase in property taxes,Medium,Explore legal avenues for tax reduction,Operating cost,Legal intervention offers substantial long-term tax savings that justify moderate legal costs.
+An increase in property taxes,High,Increase rental prices moderately,Revenue (NOI protection),Directly offsets heavy tax increases to preserve net operating income (NOI).
+$250k+ in needed major repairs,Low,Create a dedicated repair fund,Cash reserve,"Proactive, low-impact cash allocation that builds reserves without immediate financial strain."
+$250k+ in needed major repairs,Medium,Negotiate extended payment terms with contractors,Cash-flow timing,Balances required repair schedules while protecting immediate cash flow and liquidity.
+$250k+ in needed major repairs,High,Plan for a one-time rent increase,Revenue (NOI protection),"Provides immediate liquidity to cover urgent, large-scale capital expenditure (CapEx) needs."
+10% drop in occupancy rate,Low,Enhance marketing efforts,Low-cost action,Low-cost strategy to boost visibility and fill minor vacancies without lowering rental prices.
+10% drop in occupancy rate,Medium,Introduce competitive pricing,Revenue (NOI protection),Quickly attracts prospective tenants and stabilizes tenancy against market softness.
+10% drop in occupancy rate,High,Upgrade amenities to retain and attract tenants,Capital investment (CapEx),Differentiates the asset from competitors to resolve systemic vacancy issues long-term.
+Market downturn affecting property values,Low,Adjust rent to market conditions,Revenue (NOI protection),Cautious alignment with broader market pricing to maintain steady property utilization.
+Market downturn affecting property values,Medium,Strengthen tenant relationships through incentives,Operating cost,Protects existing revenue streams by reducing tenant turnover during uncertain conditions.
+Market downturn affecting property values,High,Diversify property portfolio,Capital investment (CapEx),Hedges portfolio-level capital against severe macro downturns and regional drops in asset value.
+New development competition,Low,Research competitor's pricing and services,Low-cost action,Low-cost positioning step to monitor market entries before committing capital.
+New development competition,Medium,Introduce loyalty programs for existing tenants,Operating cost,Cost-efficient retention mechanism that deters current tenants from relocating to new units.
+New development competition,High,Invest in property renovations,Capital investment (CapEx),Structural asset improvement necessary to stay competitive against modern market inventory.

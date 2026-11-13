@@ -1,0 +1,123 @@
+##### 01_credit_profiles.py
+
+==============================================================================
+1) KEY CREDIT METRICS
+==============================================================================
+                Income  Credit      Debt   Savings  Late      DTI   Net liquid
+  Persona 1    280,000     760   150,000   450,000     0    53.6%     +300,000
+  Persona 2    180,000     700   100,000   120,000     1    55.6%      +20,000
+  Persona 3    100,000     660    90,000    20,000     2    90.0%      -70,000
+  Persona 4    150,000     720   200,000    80,000     1   133.3%     -120,000
+
+==============================================================================
+2) WEIGHTED RISK SCORECARD (corrected)
+==============================================================================
+  Weights: Credit score 25%, Income 20%, Low debt 20%, Savings 25%, Clean payment history 10%
+              Original  Corrected  Category
+  Persona 1       72.1       82.1  Low Risk
+  Persona 2       44.8       57.5  Medium Risk
+  Persona 4       48.4       47.8  Medium Risk
+  Persona 3       34.0       44.0  Medium Risk
+  Ranking (safest to riskiest): Persona 1 > Persona 2 > Persona 4 > Persona 3
+  The original calculator added debt and late payments as positives; the
+  corrected version inverts them. Persona 4 (most debt) is the only one whose
+  score falls after the fix.
+  saved figures/persona_scorecard.png
+  saved figures/leverage_vs_liquidity.png
+
+##### 02_stress_test.py
+
+==============================================================================
+1) BORROWER EVENTS (from the simulation's scenario questions)
+==============================================================================
+  New mortgage on top of existing debt [Persona 2]
+    Takes a $300,000 mortgage (illustrative amount) without repaying the existing $100,000
+    Expected effect: Increase: higher total debt
+    Persona 2  score  57.5 ->  44.2   DTI   56% ->  222%   Medium Risk
+  Debt consolidation [Persona 3]
+    Combines debts into one loan; total debt unchanged
+    Expected effect: Decrease: one payment is easier to manage, often at a lower rate
+    Persona 3  score  44.0 ->  44.0   DTI   90% ->   90%   Medium Risk
+    (scorecard inputs unchanged: the benefit is real but the model cannot see it)
+  Liquidate assets to fund a start-up [Persona 1]
+    Moves $200,000 of savings (illustrative amount) into a new venture
+    Expected effect: Increase: smaller liquid buffer
+    Persona 1  score  82.1 ->  72.1   DTI   54% ->   54%   Low Risk
+  Unused $10,000 credit card fully drawn [Persona 1]
+    Worst case for an undrawn line: the full $10,000 limit becomes debt
+    Expected effect: Increase (marginal): an undrawn limit is potential exposure
+    Persona 1  score  82.1 ->  81.4   DTI   54% ->   57%   Low Risk
+  Three-year salary agreement [Persona 2]
+    Income is contractually fixed for three years
+    Expected effect: Decrease: income is more certain
+    Persona 2  score  57.5 ->  57.5   DTI   56% ->   56%   Medium Risk
+    (scorecard inputs unchanged: the benefit is real but the model cannot see it)
+  $50,000 business loan repaid on schedule [Persona 4]
+    Loan is already part of total debt; two years of on-time repayments
+    Expected effect: Decrease: proven repayment history
+    Persona 4  score  47.8 ->  47.8   DTI  133% ->  133%   Medium Risk
+    (scorecard inputs unchanged: the benefit is real but the model cannot see it)
+
+==============================================================================
+2) MACRO SHOCKS (applied to all personas)
+==============================================================================
+  Mild downturn: Income -15%, savings -20%
+    Persona 1  score  82.1 ->  74.8   DTI   54% ->   63%   Low Risk
+    Persona 2  score  57.5 ->  54.5   DTI   56% ->   65%   Medium Risk
+    Persona 3  score  44.0 ->  42.8   DTI   90% ->  106%   Medium Risk
+    Persona 4  score  47.8 ->  45.5   DTI  133% ->  157%   Medium Risk
+  Severe recession: Income -30%, savings -40%, one additional late payment
+    Persona 1  score  82.1 ->  65.5   DTI   54% ->   77%   Medium Risk  <- category change
+    Persona 2  score  57.5 ->  49.5   DTI   56% ->   79%   Medium Risk
+    Persona 3  score  44.0 ->  39.6   DTI   90% ->  129%   Medium Risk
+    Persona 4  score  47.8 ->  41.2   DTI  133% ->  190%   Medium Risk
+  saved figures/macro_stress_test.png
+
+##### 03_mitigation_matrix.py
+
+==============================================================================
+1) MITIGATION MATRIX (strategy chosen for each risk level)
+==============================================================================
+  An increase in property taxes
+    Low     Apply for tax reassessment                           [Low-cost action]
+    Medium  Explore legal avenues for tax reduction              [Operating cost]
+    High    Increase rental prices moderately                    [Revenue (NOI protection)]
+  $250k+ in needed major repairs
+    Low     Create a dedicated repair fund                       [Cash reserve]
+    Medium  Negotiate extended payment terms with contractors    [Cash-flow timing]
+    High    Plan for a one-time rent increase                    [Revenue (NOI protection)]
+  10% drop in occupancy rate
+    Low     Enhance marketing efforts                            [Low-cost action]
+    Medium  Introduce competitive pricing                        [Revenue (NOI protection)]
+    High    Upgrade amenities to retain and attract tenants      [Capital investment (CapEx)]
+  Market downturn affecting property values
+    Low     Adjust rent to market conditions                     [Revenue (NOI protection)]
+    Medium  Strengthen tenant relationships through incentives   [Operating cost]
+    High    Diversify property portfolio                         [Capital investment (CapEx)]
+  New development competition
+    Low     Research competitor's pricing and services           [Low-cost action]
+    Medium  Introduce loyalty programs for existing tenants      [Operating cost]
+    High    Invest in property renovations                       [Capital investment (CapEx)]
+
+==============================================================================
+2) HOW THE RESPONSE ESCALATES WITH RISK LEVEL
+==============================================================================
+  Lever                            Low  Medium    High
+  Low-cost action                    3       0       0
+  Cash reserve                       1       0       0
+  Cash-flow timing                   0       1       0
+  Operating cost                     0       3       0
+  Revenue (NOI protection)           1       1       2
+  Capital investment (CapEx)         0       0       3
+  Low risk -> low-cost and reserve actions; medium -> operating and cash-flow
+  measures; high -> capital investment (CapEx) or direct revenue moves to protect NOI.
+
+==============================================================================
+3) PROBABILITY -> STRATEGY (property tax increase, boundary check)
+==============================================================================
+  P = 25%  ->  Low     Apply for tax reassessment
+  P = 40%  ->  Medium  Explore legal avenues for tax reduction
+  P = 64%  ->  Medium  Explore legal avenues for tax reduction
+  P = 65%  ->  High    Increase rental prices moderately
+  P = 80%  ->  High    Increase rental prices moderately
+  saved figures/mitigation_matrix.png
