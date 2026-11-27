@@ -11,6 +11,30 @@ Two risk problems, each turned into code that can be tested:
 
 ---
 
+## Extension: Risk Desk, an interactive tool — [`app/`](app/)
+
+*Added in November 2026, on top of the original case.*
+
+The case asks you to *grade* each borrower. Risk Desk also works the scorecard **backwards**: for each persona it finds the **smallest single change that moves them to the next risk tier**, such as how much debt to pay down, savings to build or credit-score points to gain. For a borrower already at low risk, it shows the **headroom**: how much savings, income or credit score they could lose before slipping to medium. Every persona in the case came to Goldman Sachs asking for advice, so this turns the scorecard into advice.
+
+![Risk Desk](figures/risk_desk.png)
+
+Everything in it comes from the case:
+
+- **Live scorecard.** Sliders for income, credit score, debt, savings and late payments, with the score on a risk ladder, debt-to-income, net liquid assets and each attribute's contribution.
+- **Original vs corrected calculator.** One switch shows the simulation's flaw in action: under the original calculator, paying down debt *lowers* a borrower's score.
+- **Scenario events.** The six scenario questions as one-click events, with undo. The three the scorecard cannot see are flagged as blind spots.
+- **Stress the book.** Income, savings and late-payment shocks with presets for a mild downturn and a severe recession, showing which borrowers drop a tier.
+- **Property risk.** Probability sliders for the five property risks drive the mitigation matrix live, with a count of how many risks call for capital spending (CapEx).
+
+What it reveals: **for Personas 2, 3 and 4, building savings is the only single lever that reaches low risk.** Paying off debt entirely, maximising income or a perfect credit score each falls short on its own. That is a property of the scorecard's design: savings carry a 25% weight, capped at $500k.
+
+**How it's built.** One self-contained HTML page with no libraries. `app/build.py` writes the persona data and mitigation matrix into it from the same CSVs the Python analysis uses, and [`tests/test_app.py`](tests/test_app.py) runs the page's model in Node to check that its scores, stress results and thresholds match the Python model exactly, and that every suggested path is the minimum change (one step less does not cross the tier line).
+
+To open it locally: `python app/build.py`, then open `app/index.html` in a browser.
+
+---
+
 ## Part 1 — Credit risk profiles
 
 ### Key credit metrics — [`scripts/01_credit_profiles.py`](scripts/01_credit_profiles.py)
@@ -140,7 +164,13 @@ The workbook's lookup formulas (which pull a justification for the chosen strate
 │   ├── 01_credit_profiles.py
 │   ├── 02_stress_test.py
 │   └── 03_mitigation_matrix.py
-├── tests/test_models.py         # 16 tests: score direction, thresholds, metrics
+├── app/                         # Risk Desk interactive tool
+│   ├── template.html            # page source
+│   ├── build.py                 # fills in the CSV data -> index.html
+│   └── index.html               # built page, opens in any browser
+├── tests/
+│   ├── test_models.py           # 16 tests: score direction, thresholds, metrics
+│   └── test_app.py              # 4 tests: the page's model matches the Python model
 ├── figures/
 ├── results/analysis_output.txt  # full printed output
 └── run_all.py
@@ -151,5 +181,6 @@ The workbook's lookup formulas (which pull a justification for the chosen strate
 ```bash
 pip install -r requirements.txt
 python run_all.py        # regenerates figures/ and results/
-python -m pytest tests   # runs the checks
+python app/build.py      # rebuilds the Risk Desk page
+python -m pytest tests   # runs the checks (the page tests need Node.js)
 ```
