@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GS Risk Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE work: a credit desk tool shown to an interviewer, newspaper-graphics calm
+   IDEA a credit committee case file: each borrower's score on a ruled risk ladder, with the path to the next tier
+   PICTURE the live risk ladder: 0-100 scale in three tier fields, the score marker, the original-calculator ghost, the next-tier line
+   COLOUR white ground, ink #121212, red #e3120b for high risk, ochre for medium, slate #2e6f8e for low, pale #e3ecf0 panels
+   TYPE Source Serif 4 600 display + Inter text
+   LAYOUT laptop: persona tabs across, controls left, ladder + figures + path right; then scenario, stress, property bands. Phone: title, ladder, controls */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#10191e);--ink:light-dark(#121212,#e9eff2);--mute:light-dark(#5a636a,#9fb0ba);--rule:light-dark(#d5dde2,#2a3a44);--panel:light-dark(#e3ecf0,#18262e);--red:light-dark(#e3120b,#ff5b4f);--ochre:light-dark(#b7791f,#e0a84a);--slate:light-dark(#2e6f8e,#7fb8d4);--card:light-dark(#ffffff,#132027)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip}
+h1,h2{font-family:"Source Serif 4",Georgia,serif;font-weight:600;letter-spacing:-.02em;line-height:1.08;text-wrap:balance;margin:0}
+h1{font-size:clamp(32px,4.4vw,48px)}
+h2{font-size:clamp(24px,3vw,32px)}
+p{margin:0}
+.band{padding:clamp(24px,3.5vw,48px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+.top{border-top:6px solid var(--red)}
+.lede{color:var(--mute);max-width:68ch;margin-top:10px}
+.tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:22px}
+.tab{font:inherit;color:inherit;text-align:left;background:var(--card);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;cursor:pointer;min-height:44px}
+.tab b{display:block;font-size:15px}
+.tab span{display:block;font-size:13px;color:var(--mute);line-height:1.35}
+.tab[aria-pressed=true]{border-color:var(--ink);box-shadow:inset 0 -3px 0 var(--ink)}
+.chip{display:inline-block;font-size:13px;font-weight:600;padding:1px 8px;border-radius:99px;color:#fff;white-space:nowrap}
+.High{background:var(--red)}.Medium{background:var(--ochre)}.Low{background:var(--slate)}
+.desk{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.55fr);gap:clamp(16px,3vw,36px);margin-top:22px;align-items:start}
+.panel{background:var(--panel);border-radius:10px;padding:18px}
+.ctl{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;margin-bottom:14px}
+.ctl label{font-size:14px;font-weight:600}
+.ctl output{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.ctl input{grid-column:1/-1}
+input[type=range]{width:100%;height:32px;accent-color:var(--ink);cursor:pointer}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button.b{font:600 14px Inter,sans-serif;color:var(--ink);background:var(--card);border:1px solid var(--ink);border-radius:6px;padding:0 14px;min-height:44px;cursor:pointer}
+button.b:hover{background:var(--ink);color:var(--bg)}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.switch{display:flex;gap:10px;align-items:center;font-size:14px;margin-top:6px;min-height:44px;cursor:pointer}
+.switch input{width:20px;height:20px;accent-color:var(--red)}
+.fig{position:relative;height:150px}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+svg text{font-family:Inter,sans-serif;paint-order:stroke;stroke:var(--bg);stroke-width:4px}
+.verdict{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px}
+.big{font:600 clamp(44px,7vw,72px)/1 "Source Serif 4",Georgia,serif;font-variant-numeric:tabular-nums}
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(9em,1fr));gap:10px;margin:14px 0}
+.figs div{border-top:2px solid var(--ink);padding-top:6px}
+.figs small{display:block;font-size:13px;color:var(--mute)}
+.figs strong{font-size:22px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stackbar{display:flex;height:26px;border-radius:4px;overflow:hidden;background:var(--panel)}
+.stackbar i{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--mute);margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.paths{display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5em,1fr));gap:10px;margin-top:10px}
+.path{border:1px solid var(--rule);border-radius:8px;padding:10px 12px;background:var(--card)}
+.path b{display:block;font-size:14px}
+.path p{font-size:14px;color:var(--mute)}
+.path.no p{font-style:italic}
+.note{font-size:13px;color:var(--mute);margin-top:8px}
+.alt{background:var(--panel)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:clamp(16px,3vw,36px);align-items:start;margin-top:18px}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:18px}
+.ev{font:inherit;color:inherit;text-align:left;background:var(--card);border:1px solid var(--rule);border-radius:8px;padding:12px;cursor:pointer;min-height:44px}
+.ev:hover{border-color:var(--ink)}
+.ev b{display:block}
+.ev span{display:block;font-size:14px;color:var(--mute)}
+.ev em{display:inline-block;font-style:normal;font-size:13px;font-weight:600;margin-top:6px}
+.blind{color:var(--ochre)}
+.banner{margin-top:14px;padding:10px 14px;border-left:4px solid var(--red);background:var(--card);font-size:15px}
+.srow{display:grid;grid-template-columns:7.5em minmax(0,1fr) 9.5em;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--rule)}
+.track{position:relative;height:22px;background:linear-gradient(90deg,color-mix(in srgb,var(--red) 16%,transparent) 0 33%,color-mix(in srgb,var(--ochre) 16%,transparent) 33% 66%,color-mix(in srgb,var(--slate) 16%,transparent) 66%);border-radius:3px}
+.track .ln{position:absolute;top:10px;height:2px;background:var(--ink)}
+.track .d{position:absolute;top:4px;width:14px;height:14px;margin-left:-7px;border-radius:50%;border:2px solid var(--ink)}
+.track .d.a{background:var(--bg)}
+.srow .res{font-size:14px;text-align:right;white-space:nowrap}
+.prow{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,2.2fr);gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--rule)}
+.prow h3{font-size:15px;margin:0}
+.opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.opt{font-size:13px;line-height:1.3;padding:8px;border-radius:6px;border:1px solid var(--rule);color:var(--mute);background:var(--card)}
+.opt.on{color:var(--ink);border:2px solid var(--ink);font-weight:600}
+.opt small{display:block;font-weight:400;color:var(--mute);margin-top:4px}
+.mix{display:flex;height:30px;border-radius:4px;overflow:hidden;margin-top:12px}
+.mix i{display:flex;align-items:center;justify-content:center;color:#fff;font-style:normal;font-size:13px;font-weight:600}
+details{margin-top:10px;font-size:14px}
+summary{cursor:pointer;font-weight:600;min-height:32px}
+footer{font-size:13px;color:var(--mute)}
+@media(max-width:900px){.prow{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.prow .opts{grid-column:1/-1}}
+@media(max-width:720px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.desk,.grid2{grid-template-columns:minmax(0,1fr)}.desk .result{order:-1}.tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.cards{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.srow{grid-template-columns:5.5em minmax(0,1fr)}.srow .res{grid-column:1/-1;text-align:left}.opts{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:no-preference){#mk{transition:transform .35s ease}}
+</style>
+</head>
+<body>
+<header class="band top"><div class="wrap">
+  <h1>Risk Desk</h1>
+  <p class="lede">The Goldman Sachs × Forage risk case, made interactive. Pick a borrower, see their risk tier, and what it takes to move up.</p>
+  <div class="tabs" id="tabs" role="group" aria-label="Choose a persona"></div>
+</div></header>
+
+<main>
+<section class="band" style="padding-top:0"><div class="wrap desk">
+  <div class="panel">
+    <div id="ctls"></div>
+    <label class="switch"><input type="checkbox" id="orig"> Use the original calculator (with its debt bug)</label>
+    <div class="row" style="margin-top:8px"><button class="b" id="reset">Reset this persona</button><button class="b" id="resetAll">Reset all</button></div>
+  </div>
+  <div class="result">
+    <div class="verdict"><span class="big" id="score">0</span><span id="cat"></span><span class="note" id="ghost" style="margin:0"></span></div>
+    <div class="fig" id="ladderBox"><svg id="ladder" role="img" aria-label="Risk ladder"></svg></div>
+    <div class="figs" id="figs"></div>
+    <div class="stackbar" id="bar"></div>
+    <div class="legend" id="legend"></div>
+    <h2 style="font-size:22px;margin-top:20px" id="pathTitle">Path to the next tier</h2>
+    <div class="paths" id="paths"></div>
+    <p class="note">One lever at a time; the rest held fixed.</p>
+  </div>
+</div></section>
+
+<section class="band alt"><div class="wrap">
+  <h2>Scenario events from the case</h2>
+  <p class="lede">The case's scenario questions, one click each.</p>
+  <div class="cards" id="events"></div>
+  <div id="evBanner"></div>
+</div></section>
+
+<section class="band"><div class="wrap grid2">
+  <div class="panel">
+    <h2 style="font-size:24px">Stress the book</h2>
+    <p class="note" style="margin-bottom:14px">Applies to all four borrowers.</p>
+    <div id="shock"></div>
+    <div class="row"><button class="b" data-pre="0,0,0">None</button><button class="b" data-pre="15,20,0">Mild downturn</button><button class="b" data-pre="30,40,1">Severe recession</button></div>
+  </div>
+  <div>
+    <h2 style="font-size:24px" id="stressTitle"></h2>
+    <div id="stress" style="margin-top:12px"></div>
+    <div class="legend"><span><i style="border:2px solid var(--ink);border-radius:50%;width:12px;height:12px"></i>before</span><span><i style="background:var(--ink);border-radius:50%;width:12px;height:12px"></i>after shock</span></div>
+  </div>
+</div></section>
+
+<section class="band alt"><div class="wrap">
+  <h2>Property risk: probability sets the response</h2>
+  <p class="lede">Below 40% low · 40–65% medium · 65%+ high. Starting values are examples.</p>
+  <div id="prop" style="margin-top:12px"></div>
+  <h2 style="font-size:20px;margin-top:20px" id="mixTitle"></h2>
+  <div class="mix" id="mix"></div>
+  <div class="legend" id="mixLegend"></div>
+</div></section>
+</main>
+
+<footer class="band"><div class="wrap">
+  Fictional data from the Goldman Sachs × Forage risk simulation. Code and tests: <a href="https://github.com/pruthav23/risk-analytics-simulation" style="color:inherit">github.com/pruthav23/risk-analytics-simulation</a>
+</div></footer>
+
+<script id="model">
+const PERSONAS = [{"name": "Persona 1", "income": 280000, "credit": 760, "debt": 150000, "savings": 450000, "late": 0, "profile": "Entrepreneur diversifying a portfolio after a successful venture"}, {"name": "Persona 2", "income": 180000, "credit": 700, "debt": 100000, "savings": 120000, "late": 1, "profile": "Mid-career professional planning a home purchase and a college fund"}, {"name": "Persona 3", "income": 100000, "credit": 660, "debt": 90000, "savings": 20000, "late": 2, "profile": "IT consultant consolidating debts after financial setbacks"}, {"name": "Persona 4", "income": 150000, "credit": 720, "debt": 200000, "savings": 80000, "late": 1, "profile": "Small-business owner with seasonal income and expansion debt"}];
+const MATRIX = [{"risk": "An increase in property taxes", "level": "Low", "strategy": "Apply for tax reassessment", "lever": "Low-cost action", "rationale": "Cost-effective and low-effort method to manage tax exposure without impacting rental rates."}, {"risk": "An increase in property taxes", "level": "Medium", "strategy": "Explore legal avenues for tax reduction", "lever": "Operating cost", "rationale": "Legal intervention offers substantial long-term tax savings that justify moderate legal costs."}, {"risk": "An increase in property taxes", "level": "High", "strategy": "Increase rental prices moderately", "lever": "Revenue (NOI protection)", "rationale": "Directly offsets heavy tax increases to preserve net operating income (NOI)."}, {"risk": "$250k+ in needed major repairs", "level": "Low", "strategy": "Create a dedicated repair fund", "lever": "Cash reserve", "rationale": "Proactive, low-impact cash allocation that builds reserves without immediate financial strain."}, {"risk": "$250k+ in needed major repairs", "level": "Medium", "strategy": "Negotiate extended payment terms with contractors", "lever": "Cash-flow timing", "rationale": "Balances required repair schedules while protecting immediate cash flow and liquidity."}, {"risk": "$250k+ in needed major repairs", "level": "High", "strategy": "Plan for a one-time rent increase", "lever": "Revenue (NOI protection)", "rationale": "Provides immediate liquidity to cover urgent, large-scale capital expenditure (CapEx) needs."}, {"risk": "10% drop in occupancy rate", "level": "Low", "strategy": "Enhance marketing efforts", "lever": "Low-cost action", "rationale": "Low-cost strategy to boost visibility and fill minor vacancies without lowering rental prices."}, {"risk": "10% drop in occupancy rate", "level": "Medium", "strategy": "Introduce competitive pricing", "lever": "Revenue (NOI protection)", "rationale": "Quickly attracts prospective tenants and stabilizes tenancy against market softness."}, {"risk": "10% drop in occupancy rate", "level": "High", "strategy": "Upgrade amenities to retain and attract tenants", "lever": "Capital investment (CapEx)", "rationale": "Differentiates the asset from competitors to resolve systemic vacancy issues long-term."}, {"risk": "Market downturn affecting property values", "level": "Low", "strategy": "Adjust rent to market conditions", "lever": "Revenue (NOI protection)", "rationale": "Cautious alignment with broader market pricing to maintain steady property utilization."}, {"risk": "Market downturn affecting property values", "level": "Medium", "strategy": "Strengthen tenant relationships through incentives", "lever": "Operating cost", "rationale": "Protects existing revenue streams by reducing tenant turnover during uncertain conditions."}, {"risk": "Market downturn affecting property values", "level": "High", "strategy": "Diversify property portfolio", "lever": "Capital investment (CapEx)", "rationale": "Hedges portfolio-level capital against severe macro downturns and regional drops in asset value."}, {"risk": "New development competition", "level": "Low", "strategy": "Research competitor's pricing and services", "lever": "Low-cost action", "rationale": "Low-cost positioning step to monitor market entries before committing capital."}, {"risk": "New development competition", "level": "Medium", "strategy": "Introduce loyalty programs for existing tenants", "lever": "Operating cost", "rationale": "Cost-efficient retention mechanism that deters current tenants from relocating to new units."}, {"risk": "New development competition", "level": "High", "strategy": "Invest in property renovations", "lever": "Capital investment (CapEx)", "rationale": "Structural asset improvement necessary to stay competitive against modern market inventory."}];
+const WEIGHTS = {credit:0.25, income:0.20, debt:0.20, savings:0.25, late:0.10};
+const ADVERSE = ["debt", "late"];
+function normalise(b){
+  return {credit:(b.credit-300)/550*100, income:Math.min(b.income/300000,1)*100,
+    debt:Math.min(b.debt/300000,1)*100, savings:Math.min(b.savings/500000,1)*100, late:Math.min(b.late/5,1)*100};
+}
+function contributions(b, corrected=true){
+  const n = normalise(b), out = {};
+  for (const k in WEIGHTS) out[k] = (corrected && ADVERSE.includes(k) ? 100-n[k] : n[k]) * WEIGHTS[k];
+  return out;
+}
+function scoreOf(b, corrected=true){ return Object.values(contributions(b, corrected)).reduce((a,c)=>a+c, 0); }
+function category(s){ return s<=33 ? "High" : s<=66 ? "Medium" : "Low"; }
+function dti(b){ return b.debt/b.income; }
+function nla(b){ return b.savings-b.debt; }
+function shock(b, inc, sav, late){ return {...b, income:b.income*(1-inc), savings:b.savings*(1-sav), late:b.late+late}; }
+function propLevel(p){ return p<0.40 ? "Low" : p<0.65 ? "Medium" : "High"; }
+const LEVERS = [
+  {k:"debt", up:false, lo:0, hi:300000, step:1000, money:true, verb:"Pay down debt"},
+  {k:"savings", up:true, lo:0, hi:500000, step:1000, money:true, verb:"Build savings"},
+  {k:"income", up:true, lo:1000, hi:300000, step:1000, money:true, verb:"Raise income"},
+  {k:"credit", up:true, lo:300, hi:850, step:1, money:false, verb:"Lift credit score"},
+];
+// For each lever: the smallest single change that moves the score past `target`
+// (improve=true) or the largest adverse change it can absorb before falling to `target` (improve=false).
+function leverMove(b, lv, target, corrected, improve){
+  const up = improve ? lv.up : !lv.up;            // direction the lever moves
+  const end = up ? lv.hi : lv.lo;
+  const f = v => scoreOf({...b, [lv.k]:v}, corrected);
+  const ok = v => f(v) > target;                  // above the tier boundary
+  const cur = b[lv.k], s0 = f(cur);
+  if (up ? end <= cur : end >= cur) return {kind: improve ? "none" : "safe", best:s0};
+  const atEnd = f(end);
+  if (improve && atEnd <= s0 + 1e-9) return {kind:"wrong", best:atEnd};
+  if (improve && !ok(end)) return {kind:"short", best:atEnd};
+  if (!improve && ok(end)) return {kind:"safe", best:atEnd};
+  let a = cur, z = end;                           // ok(a) === ok(cur), ok(z) === ok(end)
+  for (let i=0; i<80; i++){ const m = (a+z)/2; ok(m) === ok(cur) ? (a = m) : (z = m); }
+  const toward = (x, dir) => (dir > 0 ? Math.ceil(x/lv.step) : Math.floor(x/lv.step)) * lv.step;
+  const dirEnd = up ? 1 : -1;
+  let v;
+  if (improve){ v = toward(z, dirEnd); while (!ok(v)) v += dirEnd*lv.step; }
+  else { v = toward(a, -dirEnd); while (!ok(v)) v -= dirEnd*lv.step; }
+  return {kind:"ok", value:v, change:Math.abs(v-cur), score:f(v)};
+}
+if (typeof module !== "undefined") module.exports = {PERSONAS, MATRIX, scoreOf, contributions, category, dti, nla, shock, propLevel, LEVERS, leverMove};
+</script>
+
+<script>
+{
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money = v => (v<0?"−$":"$") + Math.round(Math.abs(v)).toLocaleString("en-US");
+const SHORT = ["Entrepreneur", "Buying a home", "Consolidating debt", "Seasonal business"];
+const base = PERSONAS.map(p => ({...p}));
+let book = PERSONAS.map(p => ({...p}));
+let cur = 0, corrected = true, lastEvent = null;
+const shockVals = {inc:30, sav:40, late:1};
+const probs = [55, 30, 70, 45, 20];
+const PART = {credit:["Credit score","var(--ink)"], income:["Income","var(--slate)"], debt:["Low debt","color-mix(in srgb,var(--slate) 55%,var(--bg))"], savings:["Savings","var(--ochre)"], late:["Clean payment history","color-mix(in srgb,var(--ochre) 50%,var(--bg))"]};
+const CTL = [
+  {k:"income", label:"Annual income", min:20000, max:400000, step:1000, fmt:money},
+  {k:"credit", label:"Credit score", min:300, max:850, step:1, fmt:v=>String(v)},
+  {k:"debt", label:"Total debt", min:0, max:400000, step:1000, fmt:money},
+  {k:"savings", label:"Savings", min:0, max:600000, step:1000, fmt:money},
+  {k:"late", label:"Late payments", min:0, max:6, step:1, fmt:v=>String(v)},
+];
+const EVENTS = [
+  {p:1, t:"New mortgage", d:"+$300k debt (illustrative)", fx:b=>({debt:b.debt+300000}), say:"Risk rises."},
+  {p:2, t:"Debt consolidation", d:"Same total debt, one loan", fx:()=>({}), blind:true, say:"Real risk falls, but the scorecard can't see it."},
+  {p:0, t:"Savings into a start-up", d:"−$200k savings (illustrative)", fx:b=>({savings:Math.max(0,b.savings-200000)}), say:"Risk rises."},
+  {p:0, t:"Unused $10k card drawn", d:"+$10k debt", fx:b=>({debt:b.debt+10000}), say:"Risk rises slightly."},
+  {p:1, t:"Three-year salary agreement", d:"Income locked in", fx:()=>({}), blind:true, say:"Real risk falls, but the scorecard can't see it."},
+  {p:3, t:"Business loan repaid on time", d:"Already in debt, paid on time", fx:()=>({}), blind:true, say:"Real risk falls, but the scorecard can't see it."},
+];
+
+function renderTabs(){
+  $("tabs").innerHTML = book.map((p,i) => {
+    const c = category(scoreOf(p, corrected));
+    return `<button class="tab" aria-pressed="${i===cur}" data-i="${i}"><b>${esc(p.name)} <span class="chip ${c}" style="display:inline-block;color:#fff">${c}</span></b><span>${SHORT[i]}</span></button>`;
+  }).join("");
+}
+function renderCtls(){
+  const b = book[cur];
+  $("ctls").innerHTML = CTL.map(c => `<div class="ctl"><label for="s-${c.k}">${c.label}</label><output id="o-${c.k}">${c.fmt(b[c.k])}</output><input type="range" id="s-${c.k}" data-k="${c.k}" min="${c.min}" max="${c.max}" step="${c.step}" value="${b[c.k]}"></div>`).join("");
+}
+function drawLadder(s, ghost, target){
+  const svg = $("ladder"), W = svg.clientWidth, H = svg.clientHeight;
+  if (!W) return;
+  const L = 14, R = W-14, top = 46, h = 34, x = v => L + (R-L)*v/100;
+  const bands = [[0,33,"var(--red)","High risk"],[33,66,"var(--ochre)","Medium"],[66,100,"var(--slate)","Low risk"]];
+  // Band names sit under the bar at each band's centre; tick values sit at the band edges.
+  let g = bands.map(([a,z,c,n]) => `<rect x="${x(a)}" y="${top}" width="${x(z)-x(a)}" height="${h}" fill="${c}" opacity=".18"/><text x="${(x(a)+x(z))/2}" y="${top+h+22}" text-anchor="middle" font-size="13" font-weight="600" fill="${c}">${W<420&&n!=="Medium"?n.split(" ")[0]:n}</text>`).join("");
+  g += [0,33,66,100].map(v => `<line x1="${x(v)}" x2="${x(v)}" y1="${top}" y2="${top+h+6}" stroke="var(--ink)" stroke-width="1"/><text x="${x(v)}" y="${top+h+22}" text-anchor="middle" font-size="13" fill="var(--mute)">${v}</text>`).join("");
+  if (target !== null) g += `<line x1="${x(target)}" x2="${x(target)}" y1="${top-8}" y2="${top+h}" stroke="var(--ink)" stroke-dasharray="4 3" stroke-width="2"/>`;
+  if (ghost !== null) g += `<path d="M${x(ghost)} ${top+h-13} l-7 12 h14z" fill="var(--bg)" stroke="var(--mute)" stroke-width="1.5"/>`;
+  const lx = Math.min(Math.max(x(s), L+40), R-40);
+  g += `<g id="mk" style="transform:translateX(${x(s)}px)"><path d="M0 ${top+h} V${top-4}" stroke="var(--ink)" stroke-width="3"/><path d="M-8 ${top-16} h16 l-8 12z" fill="var(--ink)"/></g>`;
+  g += `<text x="${lx}" y="${top-22}" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)">${s.toFixed(1)}</text>`;
+  svg.innerHTML = g;
+}
+let ladderState = [0,null,null];
+const ro = new ResizeObserver(() => drawLadder(...ladderState));
+ro.observe($("ladderBox"));
+
+function pathCards(b){
+  const s = scoreOf(b, corrected), c = category(s);
+  const improve = c !== "Low", target = c === "High" ? 33 : 66;
+  $("pathTitle").textContent = improve ? `To reach ${c==="High"?"medium":"low"} risk (above ${target})` : "Headroom before medium risk";
+  return {target, html: LEVERS.map(lv => {
+    const r = leverMove(b, lv, target, corrected, improve), fmt = v => lv.money ? money(v) : Math.round(v);
+    if (improve){
+      if (r.kind==="ok") return `<div class="path"><b>${lv.verb}</b><p><strong style="color:var(--ink)">${{debt:"−",savings:"+",income:"+",credit:"+"}[lv.k]}${lv.money?money(r.change):r.change+" pts"}</strong> → ${fmt(r.value)}</p></div>`;
+      if (r.kind==="wrong") return `<div class="path no"><b>${lv.verb}</b><p>Lowers the score (bug)</p></div>`;
+      if (r.kind==="none") return `<div class="path no"><b>${lv.verb}</b><p>Already maxed</p></div>`;
+      return `<div class="path no"><b>${lv.verb}</b><p>Not enough alone (max ${r.best.toFixed(1)})</p></div>`;
+    }
+    const lab = {debt:"Extra debt", savings:"Savings loss", income:"Income loss", credit:"Credit-score drop"}[lv.k];
+    if (r.kind==="safe") return `<div class="path"><b>${lab}</b><p>Any amount</p></div>`;
+    return `<div class="path"><b>${lab}</b><p>Up to <strong style="color:var(--ink)">${lv.money?money(r.change):r.change+" pts"}</strong></p></div>`;
+  }).join("")};
+}
+function renderDesk(){
+  const b = book[cur], s = scoreOf(b, corrected), c = category(s), o = scoreOf(b, !corrected);
+  $("score").textContent = s.toFixed(1);
+  $("cat").innerHTML = `<span class="chip ${c}" style="font-size:16px;padding:3px 12px">${c} risk</span>`;
+  $("ghost").textContent = `▵ ${corrected ? "Original" : "Corrected"} calculator: ${o.toFixed(1)}`;
+  $("figs").innerHTML = [["Debt-to-income", (dti(b)*100).toFixed(1)+"%"], ["Net liquid assets", money(nla(b))], ["Credit score", b.credit], ["Late payments", b.late]]
+    .map(([k,v]) => `<div><small>${k}</small><strong>${v}</strong></div>`).join("");
+  const parts = contributions(b, corrected);
+  $("bar").innerHTML = Object.entries(parts).map(([k,v]) => `<i style="width:${Math.max(v,0)}%;background:${PART[k][1]}" title="${PART[k][0]}: ${v.toFixed(1)}"></i>`).join("");
+  $("legend").innerHTML = Object.entries(parts).map(([k,v]) => `<span><i style="background:${PART[k][1]}"></i>${corrected||!["debt","late"].includes(k)?PART[k][0]:k==="debt"?"Debt (counted as positive)":"Late payments (counted as positive)"} ${v.toFixed(1)}</span>`).join("");
+  const pc = pathCards(b);
+  $("paths").innerHTML = pc.html;
+  ladderState = [s, o, c==="Low" ? 66 : pc.target];
+  drawLadder(...ladderState);
+}
+function renderEvents(){
+  $("events").innerHTML = EVENTS.map((e,i) => `<button class="ev" data-e="${i}"><b>${esc(e.t)}</b><span>${esc(book[e.p].name)} · ${esc(e.d)}</span><em class="${e.blind?"blind":""}">${e.blind?"Blind spot":"Moves the score"}</em></button>`).join("");
+  $("evBanner").innerHTML = lastEvent ? `<div class="banner"><b>${esc(lastEvent.t)}:</b> score ${lastEvent.before.toFixed(1)} → ${lastEvent.after.toFixed(1)} (${lastEvent.cat}). ${esc(lastEvent.say)} <button class="b" id="undo" style="margin-left:8px;min-height:36px">Undo</button></div>` : "";
+}
+const SHOCKS = [["inc","Income falls by","%",0,60],["sav","Savings fall by","%",0,80],["late","Extra late payments","",0,3]];
+function renderShock(){
+  $("shock").innerHTML = SHOCKS.map(([k,l,u,a,z]) => `<div class="ctl"><label for="k-${k}">${l}</label><output id="ko-${k}">${shockVals[k]}${u}</output><input type="range" id="k-${k}" data-s="${k}" min="${a}" max="${z}" step="1" value="${shockVals[k]}"></div>`).join("");
+}
+function syncShock(){
+  for (const [k,,u] of SHOCKS){ $("k-"+k).value = shockVals[k]; $("ko-"+k).textContent = shockVals[k]+u; }
+}
+function renderStress(){
+  let moved = 0;
+  $("stress").innerHTML = book.map(b => {
+    const s0 = scoreOf(b, corrected), s1 = scoreOf(shock(b, shockVals.inc/100, shockVals.sav/100, shockVals.late), corrected);
+    const c0 = category(s0), c1 = category(s1); if (c0!==c1) moved++;
+    const a = Math.min(s0,s1), z = Math.max(s0,s1);
+    return `<div class="srow"><b>${esc(b.name)}</b><div class="track"><div class="ln" style="left:${a}%;width:${z-a}%"></div><div class="d a" style="left:${s0}%"></div><div class="d" style="left:${s1}%;background:var(--ink)"></div></div><div class="res">${s0.toFixed(1)} → <b>${s1.toFixed(1)}</b> <span class="chip ${c1}">${c1}</span></div></div>`;
+  }).join("");
+  $("stressTitle").textContent = moved ? `${moved} of 4 borrowers drop a tier` : "No borrower drops a tier";
+}
+const RISKS = [...new Set(MATRIX.map(m => m.risk))];
+function buildProp(){
+  $("prop").innerHTML = RISKS.map((r,i) => `<div class="prow"><div><h3>${esc(r)}</h3><span id="pc-${i}"></span></div><div class="ctl" style="margin:0"><label for="p-${i}">Probability</label><output id="pv-${i}"></output><input type="range" id="p-${i}" data-p="${i}" min="0" max="100" step="1" value="${probs[i]}"></div><div class="opts" id="po-${i}"></div></div>`).join("")
+    + `<details><summary>Why these strategies</summary><div id="why"></div></details>`;
+}
+function renderProp(){
+  const chosen = RISKS.map((r,i) => {
+    const lvl = propLevel(probs[i]/100), opts = MATRIX.filter(m => m.risk===r);
+    $("pc-"+i).innerHTML = `<span class="chip ${lvl}">${lvl} risk</span>`;
+    $("pv-"+i).textContent = probs[i] + "%";
+    $("po-"+i).innerHTML = opts.map(o => `<div class="opt ${o.level===lvl?"on":""}">${esc(o.strategy)}<small>${esc(o.level)} · ${esc(o.lever)}</small></div>`).join("");
+    return opts.find(o => o.level===lvl);
+  });
+  $("why").innerHTML = chosen.map(c => `<p style="margin:8px 0"><b>${esc(c.strategy)}.</b> ${esc(c.rationale)}</p>`).join("");
+  const groups = [["Low-cost / reserve",["Low-cost action","Cash reserve"],"var(--slate)"],["Operating / cash flow",["Operating cost","Cash-flow timing"],"var(--ochre)"],["Revenue (protect NOI)",["Revenue (NOI protection)"],"color-mix(in srgb,var(--red) 60%,var(--ochre))"],["Capital (CapEx)",["Capital investment (CapEx)"],"var(--red)"]];
+  const counts = groups.map(([n,ls,c]) => [n, chosen.filter(x => ls.includes(x.lever)).length, c]);
+  const capex = counts[3][1];
+  $("mixTitle").textContent = capex ? `${capex} of 5 risks need capital spending` : "No risk needs capital spending";
+  $("mix").innerHTML = counts.filter(c => c[1]).map(([n,k,c]) => `<i style="width:${k*20}%;background:${c}">${k}</i>`).join("");
+  $("mixLegend").innerHTML = counts.map(([n,k,c]) => `<span><i style="background:${c}"></i>${n}: ${k}</span>`).join("");
+}
+function renderAll(){ renderTabs(); renderCtls(); renderDesk(); renderEvents(); renderStress(); }
+
+$("tabs").addEventListener("click", e => { const t = e.target.closest(".tab"); if (!t) return; cur = +t.dataset.i; lastEvent = null; renderAll(); });
+$("ctls").addEventListener("input", e => { const k = e.target.dataset.k; if (!k) return; book[cur][k] = +e.target.value; $("o-"+k).textContent = CTL.find(c=>c.k===k).fmt(book[cur][k]); renderTabs(); renderDesk(); renderStress(); });
+$("orig").addEventListener("change", e => { corrected = !e.target.checked; renderTabs(); renderDesk(); renderStress(); });
+$("reset").addEventListener("click", () => { book[cur] = {...base[cur]}; lastEvent = null; renderAll(); });
+$("resetAll").addEventListener("click", () => { book = base.map(p => ({...p})); lastEvent = null; renderAll(); });
+$("events").addEventListener("click", e => {
+  const t = e.target.closest(".ev"); if (!t) return;
+  const ev = EVENTS[+t.dataset.e], b = book[ev.p], before = scoreOf(b, corrected);
+  const prev = {...b}; book[ev.p] = {...b, ...ev.fx(b)}; cur = ev.p;
+  const after = scoreOf(book[ev.p], corrected);
+  lastEvent = {...ev, before, after, cat:category(after), prev};
+  renderAll();
+});
+$("evBanner").addEventListener("click", e => { if (e.target.id!=="undo" || !lastEvent) return; book[lastEvent.p] = lastEvent.prev; lastEvent = null; renderAll(); });
+$("shock").addEventListener("input", e => { const k = e.target.dataset.s; if (!k) return; shockVals[k] = +e.target.value; syncShock(); renderStress(); });
+document.querySelectorAll("[data-pre]").forEach(btn => btn.addEventListener("click", () => { [shockVals.inc, shockVals.sav, shockVals.late] = btn.dataset.pre.split(",").map(Number); syncShock(); renderStress(); }));
+$("prop").addEventListener("input", e => { const i = e.target.dataset.p; if (i===undefined) return; probs[+i] = +e.target.value; renderProp(); });
+
+renderShock(); buildProp(); renderAll(); renderProp();
+}
+</script>
+</body>
+</html>
