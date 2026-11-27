@@ -59,7 +59,7 @@ svg text{font-family:Inter,sans-serif;paint-order:stroke;stroke:var(--bg);stroke
 .stackbar i{display:block;height:100%}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--mute);margin-top:6px}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
-.paths{display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:10px;margin-top:10px}
+.paths{display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5em,1fr));gap:10px;margin-top:10px}
 .path{border:1px solid var(--rule);border-radius:8px;padding:10px 12px;background:var(--card)}
 .path b{display:block;font-size:14px}
 .path p{font-size:14px;color:var(--mute)}
@@ -67,7 +67,7 @@ svg text{font-family:Inter,sans-serif;paint-order:stroke;stroke:var(--bg);stroke
 .note{font-size:13px;color:var(--mute);margin-top:8px}
 .alt{background:var(--panel)}
 .grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:clamp(16px,3vw,36px);align-items:start;margin-top:18px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(16em,1fr));gap:10px;margin-top:18px}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:18px}
 .ev{font:inherit;color:inherit;text-align:left;background:var(--card);border:1px solid var(--rule);border-radius:8px;padding:12px;cursor:pointer;min-height:44px}
 .ev:hover{border-color:var(--ink)}
 .ev b{display:block}
@@ -93,15 +93,16 @@ details{margin-top:10px;font-size:14px}
 summary{cursor:pointer;font-weight:600;min-height:32px}
 footer{font-size:13px;color:var(--mute)}
 @media(max-width:900px){.prow{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.prow .opts{grid-column:1/-1}}
-@media(max-width:720px){.desk,.grid2{grid-template-columns:minmax(0,1fr)}.desk .result{order:-1}.tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.desk,.grid2{grid-template-columns:minmax(0,1fr)}.desk .result{order:-1}.tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.cards{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:600px){.srow{grid-template-columns:5.5em minmax(0,1fr)}.srow .res{grid-column:1/-1;text-align:left}.opts{grid-template-columns:minmax(0,1fr)}}
 @media(prefers-reduced-motion:no-preference){#mk{transition:transform .35s ease}}
 </style>
 </head>
 <body>
 <header class="band top"><div class="wrap">
-  <h1>Risk Desk: four borrowers, one scorecard, and the path to a better tier</h1>
-  <p class="lede">Built on the Goldman Sachs × Forage risk simulation. Move the sliders, switch to the simulation's original calculator to see its flaw, apply the case's scenario events, stress the book, and set property-risk probabilities to drive the mitigation matrix.</p>
+  <h1>Risk Desk</h1>
+  <p class="lede">The Goldman Sachs × Forage risk case, made interactive. Pick a borrower, see their risk tier, and what it takes to move up.</p>
   <div class="tabs" id="tabs" role="group" aria-label="Choose a persona"></div>
 </div></header>
 
@@ -109,7 +110,7 @@ footer{font-size:13px;color:var(--mute)}
 <section class="band" style="padding-top:0"><div class="wrap desk">
   <div class="panel">
     <div id="ctls"></div>
-    <label class="switch"><input type="checkbox" id="orig"> Use the simulation's original calculator (debt and late payments counted as positives)</label>
+    <label class="switch"><input type="checkbox" id="orig"> Use the original calculator (with its debt bug)</label>
     <div class="row" style="margin-top:8px"><button class="b" id="reset">Reset this persona</button><button class="b" id="resetAll">Reset all</button></div>
   </div>
   <div class="result">
@@ -120,13 +121,13 @@ footer{font-size:13px;color:var(--mute)}
     <div class="legend" id="legend"></div>
     <h2 style="font-size:22px;margin-top:20px" id="pathTitle">Path to the next tier</h2>
     <div class="paths" id="paths"></div>
-    <p class="note">Each card changes one lever at a time, holding the others fixed. Late payments stay on record, so they are not a lever.</p>
+    <p class="note">One lever at a time; the rest held fixed.</p>
   </div>
 </div></section>
 
 <section class="band alt"><div class="wrap">
   <h2>Scenario events from the case</h2>
-  <p class="lede">Each card applies one of the simulation's scenario questions to that persona. Amounts marked illustrative were not given in the case.</p>
+  <p class="lede">The case's scenario questions, one click each.</p>
   <div class="cards" id="events"></div>
   <div id="evBanner"></div>
 </div></section>
@@ -134,20 +135,20 @@ footer{font-size:13px;color:var(--mute)}
 <section class="band"><div class="wrap grid2">
   <div class="panel">
     <h2 style="font-size:24px">Stress the book</h2>
-    <p class="note" style="margin-bottom:14px">Shocks apply to all four personas as currently set above.</p>
+    <p class="note" style="margin-bottom:14px">Applies to all four borrowers.</p>
     <div id="shock"></div>
     <div class="row"><button class="b" data-pre="0,0,0">None</button><button class="b" data-pre="15,20,0">Mild downturn</button><button class="b" data-pre="30,40,1">Severe recession</button></div>
   </div>
   <div>
     <h2 style="font-size:24px" id="stressTitle"></h2>
     <div id="stress" style="margin-top:12px"></div>
-    <div class="legend"><span><i style="border:2px solid var(--ink);border-radius:50%;width:12px;height:12px"></i>before</span><span><i style="background:var(--ink);border-radius:50%;width:12px;height:12px"></i>after shock</span><span>Bands: high risk ≤ 33 · medium ≤ 66 · low above 66</span></div>
+    <div class="legend"><span><i style="border:2px solid var(--ink);border-radius:50%;width:12px;height:12px"></i>before</span><span><i style="background:var(--ink);border-radius:50%;width:12px;height:12px"></i>after shock</span></div>
   </div>
 </div></section>
 
 <section class="band alt"><div class="wrap">
   <h2>Property risk: probability sets the response</h2>
-  <p class="lede">Low risk below 40%, medium from 40% to 65%, high from 65%. Starting probabilities are examples; the case did not assign them.</p>
+  <p class="lede">Below 40% low · 40–65% medium · 65%+ high. Starting values are examples.</p>
   <div id="prop" style="margin-top:12px"></div>
   <h2 style="font-size:20px;margin-top:20px" id="mixTitle"></h2>
   <div class="mix" id="mix"></div>
@@ -156,7 +157,7 @@ footer{font-size:13px;color:var(--mute)}
 </main>
 
 <footer class="band"><div class="wrap">
-  Persona data and property risks: Goldman Sachs × Forage risk job simulation (fictional). Scorecard weights and caps follow the simulation's Risk Calculator, corrected so more debt and more late payments lower the score. Source and tests: github.com/pruthav23/risk-analytics-simulation
+  Fictional data from the Goldman Sachs × Forage risk simulation. Code and tests: <a href="https://github.com/pruthav23/risk-analytics-simulation" style="color:inherit">github.com/pruthav23/risk-analytics-simulation</a>
 </div></footer>
 
 <script id="model">
@@ -215,6 +216,7 @@ if (typeof module !== "undefined") module.exports = {PERSONAS, MATRIX, scoreOf, 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money = v => (v<0?"−$":"$") + Math.round(Math.abs(v)).toLocaleString("en-US");
+const SHORT = ["Entrepreneur", "Buying a home", "Consolidating debt", "Seasonal business"];
 const base = PERSONAS.map(p => ({...p}));
 let book = PERSONAS.map(p => ({...p}));
 let cur = 0, corrected = true, lastEvent = null;
@@ -229,18 +231,18 @@ const CTL = [
   {k:"late", label:"Late payments", min:0, max:6, step:1, fmt:v=>String(v)},
 ];
 const EVENTS = [
-  {p:1, t:"New mortgage, existing debt kept", d:"Adds a $300,000 mortgage (illustrative) to current debt.", fx:b=>({debt:b.debt+300000}), say:"Risk rises: higher total debt."},
-  {p:2, t:"Debt consolidation", d:"Merges debts into one loan; total unchanged.", fx:()=>({}), blind:true, say:"Real risk falls (simpler repayment, often a lower rate), but no scorecard input changes."},
-  {p:0, t:"Savings into a start-up", d:"Moves $200,000 of savings (illustrative) into a new venture.", fx:b=>({savings:Math.max(0,b.savings-200000)}), say:"Risk rises: a smaller liquid buffer."},
-  {p:0, t:"Unused $10k card fully drawn", d:"Worst case for an idle credit line.", fx:b=>({debt:b.debt+10000}), say:"Risk rises, but only marginally."},
-  {p:1, t:"Three-year salary agreement", d:"Income is contractually fixed.", fx:()=>({}), blind:true, say:"Real risk falls (income certainty), but the scorecard cannot see stability."},
-  {p:3, t:"$50k business loan repaid on time", d:"Loan already counted in debt; two years of on-time payments.", fx:()=>({}), blind:true, say:"Real risk falls (proven repayment), but the scorecard has no recent-behaviour input."},
+  {p:1, t:"New mortgage", d:"+$300k debt (illustrative)", fx:b=>({debt:b.debt+300000}), say:"Risk rises."},
+  {p:2, t:"Debt consolidation", d:"Same total debt, one loan", fx:()=>({}), blind:true, say:"Real risk falls, but the scorecard can't see it."},
+  {p:0, t:"Savings into a start-up", d:"−$200k savings (illustrative)", fx:b=>({savings:Math.max(0,b.savings-200000)}), say:"Risk rises."},
+  {p:0, t:"Unused $10k card drawn", d:"+$10k debt", fx:b=>({debt:b.debt+10000}), say:"Risk rises slightly."},
+  {p:1, t:"Three-year salary agreement", d:"Income locked in", fx:()=>({}), blind:true, say:"Real risk falls, but the scorecard can't see it."},
+  {p:3, t:"Business loan repaid on time", d:"Already in debt, paid on time", fx:()=>({}), blind:true, say:"Real risk falls, but the scorecard can't see it."},
 ];
 
 function renderTabs(){
   $("tabs").innerHTML = book.map((p,i) => {
     const c = category(scoreOf(p, corrected));
-    return `<button class="tab" aria-pressed="${i===cur}" data-i="${i}"><b>${esc(p.name)} <span class="chip ${c}" style="display:inline-block;color:#fff">${c}</span></b><span>${esc(p.profile)}</span></button>`;
+    return `<button class="tab" aria-pressed="${i===cur}" data-i="${i}"><b>${esc(p.name)} <span class="chip ${c}" style="display:inline-block;color:#fff">${c}</span></b><span>${SHORT[i]}</span></button>`;
   }).join("");
 }
 function renderCtls(){
@@ -269,25 +271,25 @@ ro.observe($("ladderBox"));
 function pathCards(b){
   const s = scoreOf(b, corrected), c = category(s);
   const improve = c !== "Low", target = c === "High" ? 33 : 66;
-  $("pathTitle").textContent = improve ? `Path to ${c==="High"?"medium":"low"} risk: score above ${target}` : "Headroom: how much can go wrong before medium risk";
+  $("pathTitle").textContent = improve ? `To reach ${c==="High"?"medium":"low"} risk (above ${target})` : "Headroom before medium risk";
   return {target, html: LEVERS.map(lv => {
     const r = leverMove(b, lv, target, corrected, improve), fmt = v => lv.money ? money(v) : Math.round(v);
     if (improve){
-      if (r.kind==="ok") return `<div class="path"><b>${lv.verb}</b><p>${{debt:"Pay down",savings:"Add",income:"Raise by",credit:"Raise by"}[lv.k]} ${lv.money?money(r.change):r.change+" points"}, to ${fmt(r.value)}. Score ${r.score.toFixed(1)}.</p></div>`;
-      if (r.kind==="wrong") return `<div class="path no"><b>${lv.verb}</b><p>Lowers this score. The original calculator rewards debt.</p></div>`;
-      if (r.kind==="none") return `<div class="path no"><b>${lv.verb}</b><p>Already at the scorecard's cap.</p></div>`;
-      return `<div class="path no"><b>${lv.verb}</b><p>Not enough on its own: peaks at ${r.best.toFixed(1)}.</p></div>`;
+      if (r.kind==="ok") return `<div class="path"><b>${lv.verb}</b><p><strong style="color:var(--ink)">${{debt:"−",savings:"+",income:"+",credit:"+"}[lv.k]}${lv.money?money(r.change):r.change+" pts"}</strong> → ${fmt(r.value)}</p></div>`;
+      if (r.kind==="wrong") return `<div class="path no"><b>${lv.verb}</b><p>Lowers the score (bug)</p></div>`;
+      if (r.kind==="none") return `<div class="path no"><b>${lv.verb}</b><p>Already maxed</p></div>`;
+      return `<div class="path no"><b>${lv.verb}</b><p>Not enough alone (max ${r.best.toFixed(1)})</p></div>`;
     }
-    const lab = {debt:"Extra debt it can carry", savings:"Savings it can lose", income:"Income it can lose", credit:"Credit-score drop it can take"}[lv.k];
-    if (r.kind==="safe") return `<div class="path"><b>${lab}</b><p>All of it; stays low risk (floor ${r.best.toFixed(1)}).</p></div>`;
-    return `<div class="path"><b>${lab}</b><p>${lv.money?money(r.change):r.change+" points"} before falling to medium.</p></div>`;
+    const lab = {debt:"Extra debt", savings:"Savings loss", income:"Income loss", credit:"Credit-score drop"}[lv.k];
+    if (r.kind==="safe") return `<div class="path"><b>${lab}</b><p>Any amount</p></div>`;
+    return `<div class="path"><b>${lab}</b><p>Up to <strong style="color:var(--ink)">${lv.money?money(r.change):r.change+" pts"}</strong></p></div>`;
   }).join("")};
 }
 function renderDesk(){
   const b = book[cur], s = scoreOf(b, corrected), c = category(s), o = scoreOf(b, !corrected);
   $("score").textContent = s.toFixed(1);
   $("cat").innerHTML = `<span class="chip ${c}" style="font-size:16px;padding:3px 12px">${c} risk</span>`;
-  $("ghost").textContent = `${corrected ? "Original" : "Corrected"} calculator: ${o.toFixed(1)} (${category(o)}) ▵`;
+  $("ghost").textContent = `▵ ${corrected ? "Original" : "Corrected"} calculator: ${o.toFixed(1)}`;
   $("figs").innerHTML = [["Debt-to-income", (dti(b)*100).toFixed(1)+"%"], ["Net liquid assets", money(nla(b))], ["Credit score", b.credit], ["Late payments", b.late]]
     .map(([k,v]) => `<div><small>${k}</small><strong>${v}</strong></div>`).join("");
   const parts = contributions(b, corrected);
@@ -299,7 +301,7 @@ function renderDesk(){
   drawLadder(...ladderState);
 }
 function renderEvents(){
-  $("events").innerHTML = EVENTS.map((e,i) => `<button class="ev" data-e="${i}"><b>${esc(e.t)}</b><span>${esc(book[e.p].name)} · ${esc(e.d)}</span><em class="${e.blind?"blind":""}">${e.blind?"Scorecard blind spot":"Moves the score"}</em></button>`).join("");
+  $("events").innerHTML = EVENTS.map((e,i) => `<button class="ev" data-e="${i}"><b>${esc(e.t)}</b><span>${esc(book[e.p].name)} · ${esc(e.d)}</span><em class="${e.blind?"blind":""}">${e.blind?"Blind spot":"Moves the score"}</em></button>`).join("");
   $("evBanner").innerHTML = lastEvent ? `<div class="banner"><b>${esc(lastEvent.t)}:</b> score ${lastEvent.before.toFixed(1)} → ${lastEvent.after.toFixed(1)} (${lastEvent.cat}). ${esc(lastEvent.say)} <button class="b" id="undo" style="margin-left:8px;min-height:36px">Undo</button></div>` : "";
 }
 const SHOCKS = [["inc","Income falls by","%",0,60],["sav","Savings fall by","%",0,80],["late","Extra late payments","",0,3]];
@@ -317,12 +319,12 @@ function renderStress(){
     const a = Math.min(s0,s1), z = Math.max(s0,s1);
     return `<div class="srow"><b>${esc(b.name)}</b><div class="track"><div class="ln" style="left:${a}%;width:${z-a}%"></div><div class="d a" style="left:${s0}%"></div><div class="d" style="left:${s1}%;background:var(--ink)"></div></div><div class="res">${s0.toFixed(1)} → <b>${s1.toFixed(1)}</b> <span class="chip ${c1}">${c1}</span></div></div>`;
   }).join("");
-  $("stressTitle").textContent = moved ? `${moved} of 4 borrowers drop a risk tier under this shock` : "No borrower changes risk tier under this shock";
+  $("stressTitle").textContent = moved ? `${moved} of 4 borrowers drop a tier` : "No borrower drops a tier";
 }
 const RISKS = [...new Set(MATRIX.map(m => m.risk))];
 function buildProp(){
   $("prop").innerHTML = RISKS.map((r,i) => `<div class="prow"><div><h3>${esc(r)}</h3><span id="pc-${i}"></span></div><div class="ctl" style="margin:0"><label for="p-${i}">Probability</label><output id="pv-${i}"></output><input type="range" id="p-${i}" data-p="${i}" min="0" max="100" step="1" value="${probs[i]}"></div><div class="opts" id="po-${i}"></div></div>`).join("")
-    + `<details><summary>Why each chosen strategy</summary><div id="why"></div></details>`;
+    + `<details><summary>Why these strategies</summary><div id="why"></div></details>`;
 }
 function renderProp(){
   const chosen = RISKS.map((r,i) => {
@@ -336,7 +338,7 @@ function renderProp(){
   const groups = [["Low-cost / reserve",["Low-cost action","Cash reserve"],"var(--slate)"],["Operating / cash flow",["Operating cost","Cash-flow timing"],"var(--ochre)"],["Revenue (protect NOI)",["Revenue (NOI protection)"],"color-mix(in srgb,var(--red) 60%,var(--ochre))"],["Capital (CapEx)",["Capital investment (CapEx)"],"var(--red)"]];
   const counts = groups.map(([n,ls,c]) => [n, chosen.filter(x => ls.includes(x.lever)).length, c]);
   const capex = counts[3][1];
-  $("mixTitle").textContent = capex ? `${capex} of 5 risks now call for capital spending` : "No risk calls for capital spending at these probabilities";
+  $("mixTitle").textContent = capex ? `${capex} of 5 risks need capital spending` : "No risk needs capital spending";
   $("mix").innerHTML = counts.filter(c => c[1]).map(([n,k,c]) => `<i style="width:${k*20}%;background:${c}">${k}</i>`).join("");
   $("mixLegend").innerHTML = counts.map(([n,k,c]) => `<span><i style="background:${c}"></i>${n}: ${k}</span>`).join("");
 }
