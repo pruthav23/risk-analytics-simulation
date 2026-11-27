@@ -16,6 +16,7 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from risk import calibration  # noqa: E402
 from risk.credit import assess, scorecard  # noqa: E402
 from risk.data import load_personas  # noqa: E402
 from risk.mitigation import risk_level  # noqa: E402
@@ -24,8 +25,11 @@ pytestmark = pytest.mark.skipif(shutil.which("node") is None, reason="Node not i
 
 PROBE = """
 const m = require(process.argv[2]);
-const out = {scores: {}, original: {}, severe: {}, levels: {}, paths: {}};
+const out = {scores: {}, original: {}, severe: {}, levels: {}, paths: {}, calibrated: {}, pd: {}, el: {}};
 for (const p of m.PERSONAS) {
+  out.calibrated[p.name] = m.scoreOf(p, "calibrated");
+  out.pd[p.name] = m.pd(p);
+  out.el[p.name] = m.expectedLoss(p);
   out.scores[p.name] = m.scoreOf(p, true);
   out.original[p.name] = m.scoreOf(p, false);
   out.severe[p.name] = m.scoreOf(m.shock(p, 0.30, 0.40, 1), true);
@@ -91,3 +95,14 @@ def test_path_to_next_tier_is_minimal(page_model):
             current = getattr(persona, field)
             one_less = value + steps[move["k"]] if value < current else value - steps[move["k"]]
             assert scorecard(persona.adjust(**{field: one_less})) <= move["target"]
+
+
+def test_default_model_matches_python(page_model):
+    results = calibration.load()
+    for persona in load_personas():
+        assert page_model["pd"][persona.name] == pytest.approx(
+            calibration.probability_of_default(persona, results))
+        assert page_model["el"][persona.name] == pytest.approx(
+            calibration.expected_loss(persona, results))
+        assert page_model["calibrated"][persona.name] == pytest.approx(
+            calibration.calibrated_score(persona, results))
