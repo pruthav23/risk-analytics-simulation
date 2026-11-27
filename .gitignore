@@ -6,3 +6,6 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .venv/
+
+# External datasets (download yourself; licence does not allow redistribution)
+data/external/
