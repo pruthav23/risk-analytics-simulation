@@ -1,0 +1,87 @@
+{
+  "source": "Kaggle 'Give Me Some Credit' (2011), cs-training.csv",
+  "borrowers": 118494,
+  "default_rate": 0.06927776933853191,
+  "intercept": -3.1962349362174693,
+  "coefficients": {
+    "income": -0.01245277943751464,
+    "leverage": 0.00631157080059029,
+    "late": 0.04018322560480228
+  },
+  "test_auc": 0.7900616606891834,
+  "test_gini": 0.5801233213783668,
+  "calibration_by_decile": [
+    {
+      "predicted": 0.021897795834303214,
+      "actual": 0.020534458509142053
+    },
+    {
+      "predicted": 0.028613504646586886,
+      "actual": 0.01969057665260197
+    },
+    {
+      "predicted": 0.031780212487661136,
+      "actual": 0.01969057665260197
+    },
+    {
+      "predicted": 0.034216663599200337,
+      "actual": 0.02728551336146273
+    },
+    {
+      "predicted": 0.03649756182295109,
+      "actual": 0.030942334739803096
+    },
+    {
+      "predicted": 0.03925486778654217,
+      "actual": 0.03009845288326301
+    },
+    {
+      "predicted": 0.04377585127984848,
+      "actual": 0.04163150492264416
+    },
+    {
+      "predicted": 0.05553922806984439,
+      "actual": 0.06779184247538678
+    },
+    {
+      "predicted": 0.07921829243884322,
+      "actual": 0.11448663853727145
+    },
+    {
+      "predicted": 0.30994251047306665,
+      "actual": 0.3207653348339899
+    }
+  ],
+  "default_rate_by_late_payments": [
+    {
+      "late_payments": 0,
+      "default_rate": 0.029580162883530783,
+      "borrowers": 93441
+    },
+    {
+      "late_payments": 1,
+      "default_rate": 0.120310207503668,
+      "borrowers": 14313
+    },
+    {
+      "late_payments": 2,
+      "default_rate": 0.23618895116092875,
+      "borrowers": 4996
+    },
+    {
+      "late_payments": 3,
+      "default_rate": 0.3375052148518982,
+      "borrowers": 2397
+    },
+    {
+      "late_payments": 4,
+      "default_rate": 0.43193916349809885,
+      "borrowers": 1315
+    },
+    {
+      "late_payments": 5,
+      "default_rate": 0.5738188976377953,
+      "borrowers": 2032
+    }
+  ]
+}

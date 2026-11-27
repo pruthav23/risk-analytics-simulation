@@ -121,3 +121,44 @@
   P = 65%  ->  High    Increase rental prices moderately
   P = 80%  ->  High    Increase rental prices moderately
   saved figures/mitigation_matrix.png
+
+##### 04_calibrate_weights.py
+  refitted on cs-training.csv
+
+==============================================================================
+1) MODEL FITTED TO REAL DEFAULT DATA
+==============================================================================
+  Source: Kaggle 'Give Me Some Credit' (2011), cs-training.csv
+  Borrowers: 118,494   default rate 6.9%
+  Held-out AUC 0.790   Gini 0.580
+  Default rate by late payments:
+    0     3.0%   (93,441 borrowers)
+    1    12.0%   (14,313 borrowers)
+    2    23.6%   (4,996 borrowers)
+    3    33.8%   (2,397 borrowers)
+    4    43.2%   (1,315 borrowers)
+    5+   57.4%   (2,032 borrowers)
+  Calibration on held-out borrowers (predicted vs actual, by decile):
+    2.2%/2.1%  2.9%/2.0%  3.2%/2.0%  3.4%/2.7%  3.6%/3.1%  3.9%/3.0%  4.4%/4.2%  5.6%/6.8%  7.9%/11.4%  31.0%/32.1%
+
+==============================================================================
+2) WEIGHTS: SIMULATION vs DATA (three inputs the data covers)
+==============================================================================
+  Input               Simulation    Data
+  Late payments              20%     68%
+  Income                     40%     21%
+  Debt / leverage            40%     11%
+  Credit score and savings are not in the dataset; they keep their 25% each.
+  Calibrated scorecard weights: credit score 25.0%, savings 25.0%, annual income 10.6%, leverage 5.4%, late payments 34.1%
+
+==============================================================================
+3) PERSONAS: PROBABILITY OF DEFAULT AND EXPECTED LOSS
+==============================================================================
+  Assumes debt is repaid over 60 months at 8%; LGD 45%; exposure = current debt.
+             Pay/income  2-yr PD  Exp. loss  Sim score  Calibrated
+  Persona 1       13.0%     1.4%        925       82.1   92.0 Low Risk
+  Persona 2       13.5%     4.5%      2,026       57.5   62.4 Medium Risk
+  Persona 3       21.9%    13.4%      5,428       44.0   45.5 Medium Risk
+  Persona 4       32.4%     5.7%      5,109       47.8   59.3 Medium Risk
+  saved figures/default_rate_by_late_payments.png
+  saved figures/weights_simulation_vs_data.png

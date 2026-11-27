@@ -145,10 +145,49 @@ The workbook's lookup formulas (which pull a justification for the chosen strate
 
 ---
 
+## Extension: testing the weights on real default data — [`scripts/04_calibrate_weights.py`](scripts/04_calibrate_weights.py)
+
+*Added in November 2026.* The simulation's weights were set by hand. To test them, a logistic-regression default model was fitted to Kaggle's **"Give Me Some Credit"** dataset: **118,494 real U.S. borrowers** (after cleaning), each labelled with whether they went 90+ days delinquent within two years.
+
+| Scorecard input | Dataset field |
+|---|---|
+| Income | Monthly income × 12 |
+| Debt | Debt ratio: monthly debt payments ÷ monthly income |
+| Late payments | 30–59, 60–89 and 90+ days-late counts, summed |
+
+Each input is scaled 0–100 exactly as the scorecard scales it, so the fitted coefficients can be compared directly. The model scores **AUC 0.79** (Gini 0.58) on borrowers held out from fitting, and its predicted default rates track actual rates decile by decile.
+
+![Default rate by late payments](figures/default_rate_by_late_payments.png)
+
+**Finding: payment history matters far more than the simulation assumed.** Among the three inputs the data covers, late payments carry **68%** of the weight, against 20% in the simulation.
+
+![Weights: simulation vs data](figures/weights_simulation_vs_data.png)
+
+The dataset has **no credit score or savings**, so those keep the simulation's 25% each. The calibrated scorecard re-splits only the other 50%: late payments 34.1%, income 10.6%, leverage 5.4%.
+
+### Probability of default for each persona
+
+The personas give total debt, not monthly payments, so debt is assumed to be repaid over 5 years at 8% to estimate payments. Expected loss = PD × LGD (45%, the Basel value for unsecured lending) × exposure (current debt).
+
+| Persona | Payments ÷ income | 2-year PD | Expected loss | Original score | Calibrated score |
+|---|---|---|---|---|---|
+| Persona 1 | 13.0% | **1.4%** | $925 | 82.1 Low | 92.0 Low |
+| Persona 2 | 13.5% | **4.5%** | $2,026 | 57.5 Medium | 62.4 Medium |
+| Persona 4 | 32.4% | **5.7%** | $5,109 | 47.8 Medium | 59.3 Medium |
+| Persona 3 | 21.9% | **13.4%** | $5,428 | 44.0 Medium | 45.5 Medium |
+
+The PDs rank the personas in the same order as the written assessment, and they separate Persona 3 (two late payments) clearly from Persona 4, which the original scorecard could not.
+
+**Reproducing it.** The Kaggle data can't be redistributed, so it isn't in this repo; the fitted results are saved in [`results/calibration.json`](results/calibration.json) and everything above runs from that. To refit, download `cs-training.csv` from [kaggle.com/c/GiveMeSomeCredit](https://www.kaggle.com/c/GiveMeSomeCredit/data) into `data/external/` and run `python run_all.py`; a test confirms the refit matches the saved coefficients.
+
+**Caveats.** The dataset is from a 2011 competition, and its "default" is 90+ days delinquent rather than charge-off. The model uses only the three inputs that map onto the case. Adding revolving-credit utilisation and age, which the dataset also has, lifts AUC to about 0.84, but the personas don't have those fields.
+
+---
+
 ## Limitations
 
-- **The scorecard is rule-based, not a calibrated probability-of-default model.** There's no historical default data in the simulation to fit one. Its weights and caps come from the simulation's calculator.
-- **Absolute debt, not leverage, drives the debt score.** A $200k debt scores the same at any income. Using DTI instead would separate Personas 3 and 4 more clearly from Persona 2.
+- **Credit score and savings weights remain hand-set.** The calibration above covers income, leverage and payment history; the dataset has no credit score or savings.
+- **Absolute debt, not leverage, drives the original debt score.** A $200k debt scores the same at any income. The calibrated scorecard uses payments ÷ income instead.
 - **Stress assumptions are illustrative.** Shocks are uniform across personas. Persona 4's seasonal income would realistically take a larger hit.
 - Persona 4's income appears as "$150,00" in the simulation brief and is taken as **$150,000**.
 
@@ -161,11 +200,13 @@ The workbook's lookup formulas (which pull a justification for the chosen strate
 ├── risk/                        # model code
 │   ├── credit.py                # DTI, net liquid assets, weighted scorecard
 │   ├── stress.py                # borrower events and macro shocks
-│   └── mitigation.py            # probability thresholds -> strategy
+│   ├── mitigation.py            # probability thresholds -> strategy
+│   └── calibration.py           # default model fitted to real data, PD, expected loss
 ├── scripts/                     # reports and charts
 │   ├── 01_credit_profiles.py
 │   ├── 02_stress_test.py
-│   └── 03_mitigation_matrix.py
+│   ├── 03_mitigation_matrix.py
+│   └── 04_calibrate_weights.py
 ├── app/                         # Risk Desk interactive tool
 │   ├── template.html            # page source
 │   ├── build.py                 # fills in the CSV data -> index.html
@@ -173,9 +214,12 @@ The workbook's lookup formulas (which pull a justification for the chosen strate
 │   └── publish_pages.sh         # pushes the page to GitHub Pages (gh-pages branch)
 ├── tests/
 │   ├── test_models.py           # 16 tests: score direction, thresholds, metrics
-│   └── test_app.py              # 4 tests: the page's model matches the Python model
+│   ├── test_app.py              # 4 tests: the page's model matches the Python model
+│   └── test_calibration.py      # 8 tests: coefficient signs, AUC, PD ranking, refit
 ├── figures/
-├── results/analysis_output.txt  # full printed output
+├── results/
+│   ├── analysis_output.txt      # full printed output
+│   └── calibration.json         # fitted default model
 └── run_all.py
 ```
 

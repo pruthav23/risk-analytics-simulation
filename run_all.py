@@ -7,7 +7,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-SCRIPTS = ["01_credit_profiles.py", "02_stress_test.py", "03_mitigation_matrix.py"]
+SCRIPTS = ["01_credit_profiles.py", "02_stress_test.py", "03_mitigation_matrix.py",
+           "04_calibrate_weights.py"]
 
 
 def main():
