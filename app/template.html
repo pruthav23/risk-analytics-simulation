@@ -44,8 +44,10 @@ input[type=range]{width:100%;height:32px;accent-color:var(--ink);cursor:pointer}
 button.b{font:600 14px Inter,sans-serif;color:var(--ink);background:var(--card);border:1px solid var(--ink);border-radius:6px;padding:0 14px;min-height:44px;cursor:pointer}
 button.b:hover{background:var(--ink);color:var(--bg)}
 button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--red);outline-offset:2px}
-.switch{display:flex;gap:10px;align-items:center;font-size:14px;margin-top:6px;min-height:44px;cursor:pointer}
-.switch input{width:20px;height:20px;accent-color:var(--red)}
+.seg{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:4px}
+.seg span{font-size:14px;font-weight:600;margin-right:4px}
+.seg button{font:600 14px Inter,sans-serif;color:var(--ink);background:var(--card);border:1px solid var(--rule);border-radius:99px;padding:0 14px;min-height:40px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .fig{position:relative;height:150px}
 .fig>svg{position:absolute;inset:0;width:100%;height:100%}
 svg text{font-family:Inter,sans-serif;paint-order:stroke;stroke:var(--bg);stroke-width:4px}
@@ -75,12 +77,13 @@ svg text{font-family:Inter,sans-serif;paint-order:stroke;stroke:var(--bg);stroke
 .ev em{display:inline-block;font-style:normal;font-size:13px;font-weight:600;margin-top:6px}
 .blind{color:var(--ochre)}
 .banner{margin-top:14px;padding:10px 14px;border-left:4px solid var(--red);background:var(--card);font-size:15px}
-.srow{display:grid;grid-template-columns:7.5em minmax(0,1fr) 9.5em;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--rule)}
+.srow{display:grid;grid-template-columns:7.5em minmax(0,1fr) 11.5em;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--rule)}
 .track{position:relative;height:22px;background:linear-gradient(90deg,color-mix(in srgb,var(--red) 16%,transparent) 0 33%,color-mix(in srgb,var(--ochre) 16%,transparent) 33% 66%,color-mix(in srgb,var(--slate) 16%,transparent) 66%);border-radius:3px}
 .track .ln{position:absolute;top:10px;height:2px;background:var(--ink)}
 .track .d{position:absolute;top:4px;width:14px;height:14px;margin-left:-7px;border-radius:50%;border:2px solid var(--ink)}
 .track .d.a{background:var(--bg)}
 .srow .res{font-size:14px;text-align:right;white-space:nowrap}
+.srow .res small{display:block;color:var(--mute);font-size:13px}
 .prow{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,2.2fr);gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--rule)}
 .prow h3{font-size:15px;margin:0}
 .opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
@@ -110,13 +113,15 @@ footer{font-size:13px;color:var(--mute)}
 <section class="band" style="padding-top:0"><div class="wrap desk">
   <div class="panel">
     <div id="ctls"></div>
-    <label class="switch"><input type="checkbox" id="orig"> Use the original calculator (with its debt bug)</label>
+    <div class="seg" id="modes" role="group" aria-label="Scorecard weights"><span>Weights</span><button data-mode="original" aria-pressed="false">Original</button><button data-mode="corrected" aria-pressed="true">Corrected</button><button data-mode="calibrated" aria-pressed="false">Data-calibrated</button></div>
+    <p class="note" id="modeNote"></p>
     <div class="row" style="margin-top:8px"><button class="b" id="reset">Reset this persona</button><button class="b" id="resetAll">Reset all</button></div>
   </div>
   <div class="result">
     <div class="verdict"><span class="big" id="score">0</span><span id="cat"></span><span class="note" id="ghost" style="margin:0"></span></div>
     <div class="fig" id="ladderBox"><svg id="ladder" role="img" aria-label="Risk ladder"></svg></div>
     <div class="figs" id="figs"></div>
+    <p class="note" style="margin:-6px 0 12px">Default probability: model fitted to 118,494 real borrowers.</p>
     <div class="stackbar" id="bar"></div>
     <div class="legend" id="legend"></div>
     <h2 style="font-size:22px;margin-top:20px" id="pathTitle">Path to the next tier</h2>
@@ -141,7 +146,8 @@ footer{font-size:13px;color:var(--mute)}
   </div>
   <div>
     <h2 style="font-size:24px" id="stressTitle"></h2>
-    <div id="stress" style="margin-top:12px"></div>
+    <p class="note" id="stressEL" style="margin-top:4px"></p>
+    <div id="stress" style="margin-top:8px"></div>
     <div class="legend"><span><i style="border:2px solid var(--ink);border-radius:50%;width:12px;height:12px"></i>before</span><span><i style="background:var(--ink);border-radius:50%;width:12px;height:12px"></i>after shock</span></div>
   </div>
 </div></section>
@@ -157,24 +163,45 @@ footer{font-size:13px;color:var(--mute)}
 </main>
 
 <footer class="band"><div class="wrap">
-  Fictional data from the Goldman Sachs × Forage risk simulation. Code and tests: <a href="https://github.com/pruthav23/risk-analytics-simulation" style="color:inherit">github.com/pruthav23/risk-analytics-simulation</a>
+  Fictional data from the Goldman Sachs × Forage risk simulation. Default model: Kaggle "Give Me Some Credit". Code and tests: <a href="https://github.com/pruthav23/risk-analytics-simulation" style="color:inherit">github.com/pruthav23/risk-analytics-simulation</a>
 </div></footer>
 
 <script id="model">
 const PERSONAS = /*PERSONAS*/;
 const MATRIX = /*MATRIX*/;
+const CAL = /*CALIBRATION*/;
 const WEIGHTS = {credit:0.25, income:0.20, debt:0.20, savings:0.25, late:0.10};
 const ADVERSE = ["debt", "late"];
+// Modes: "original" (simulation, debt bug), "corrected", "calibrated" (weights fitted to real defaults).
+const modeOf = m => m === true ? "corrected" : m === false ? "original" : m;
+// Estimated monthly debt payments / monthly income: debt repaid over CAL.loan_months at CAL.loan_rate.
+function paymentToIncome(b){
+  const r = CAL.loan_rate/12, pay = b.debt*r/(1-(1+r)**-CAL.loan_months);
+  return pay*12/b.income;
+}
 function normalise(b){
   return {credit:(b.credit-300)/550*100, income:Math.min(b.income/300000,1)*100,
-    debt:Math.min(b.debt/300000,1)*100, savings:Math.min(b.savings/500000,1)*100, late:Math.min(b.late/5,1)*100};
+    debt:Math.min(b.debt/300000,1)*100, savings:Math.min(b.savings/500000,1)*100, late:Math.min(b.late/5,1)*100,
+    pti:Math.min(paymentToIncome(b),1)*100};
 }
-function contributions(b, corrected=true){
+function contributions(b, mode="corrected"){
+  mode = modeOf(mode);
   const n = normalise(b), out = {};
-  for (const k in WEIGHTS) out[k] = (corrected && ADVERSE.includes(k) ? 100-n[k] : n[k]) * WEIGHTS[k];
+  if (mode === "calibrated"){
+    const w = CAL.weights;
+    return {credit:n.credit*w.credit_score, income:n.income*w.annual_income, debt:(100-n.pti)*w.leverage,
+      savings:n.savings*w.savings, late:(100-n.late)*w.late_payments};
+  }
+  for (const k in WEIGHTS) out[k] = (mode === "corrected" && ADVERSE.includes(k) ? 100-n[k] : n[k]) * WEIGHTS[k];
   return out;
 }
-function scoreOf(b, corrected=true){ return Object.values(contributions(b, corrected)).reduce((a,c)=>a+c, 0); }
+function scoreOf(b, mode="corrected"){ return Object.values(contributions(b, mode)).reduce((a,c)=>a+c, 0); }
+// Two-year probability of default from the logistic model fitted to real borrowers.
+function pd(b){
+  const n = normalise(b), c = CAL.coefficients;
+  return 1/(1+Math.exp(-(CAL.intercept + c.income*n.income + c.leverage*n.pti + c.late*n.late)));
+}
+function expectedLoss(b){ return pd(b)*CAL.lgd*b.debt; }
 function category(s){ return s<=33 ? "High" : s<=66 ? "Medium" : "Low"; }
 function dti(b){ return b.debt/b.income; }
 function nla(b){ return b.savings-b.debt; }
@@ -188,10 +215,10 @@ const LEVERS = [
 ];
 // For each lever: the smallest single change that moves the score past `target`
 // (improve=true) or the largest adverse change it can absorb before falling to `target` (improve=false).
-function leverMove(b, lv, target, corrected, improve){
+function leverMove(b, lv, target, mode, improve){
   const up = improve ? lv.up : !lv.up;            // direction the lever moves
   const end = up ? lv.hi : lv.lo;
-  const f = v => scoreOf({...b, [lv.k]:v}, corrected);
+  const f = v => scoreOf({...b, [lv.k]:v}, mode);
   const ok = v => f(v) > target;                  // above the tier boundary
   const cur = b[lv.k], s0 = f(cur);
   if (up ? end <= cur : end >= cur) return {kind: improve ? "none" : "safe", best:s0};
@@ -208,7 +235,7 @@ function leverMove(b, lv, target, corrected, improve){
   else { v = toward(a, -dirEnd); while (!ok(v)) v -= dirEnd*lv.step; }
   return {kind:"ok", value:v, change:Math.abs(v-cur), score:f(v)};
 }
-if (typeof module !== "undefined") module.exports = {PERSONAS, MATRIX, scoreOf, contributions, category, dti, nla, shock, propLevel, LEVERS, leverMove};
+if (typeof module !== "undefined") module.exports = {PERSONAS, MATRIX, CAL, pd, expectedLoss, paymentToIncome, scoreOf, contributions, category, dti, nla, shock, propLevel, LEVERS, leverMove};
 </script>
 
 <script>
@@ -216,10 +243,11 @@ if (typeof module !== "undefined") module.exports = {PERSONAS, MATRIX, scoreOf, 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money = v => (v<0?"−$":"$") + Math.round(Math.abs(v)).toLocaleString("en-US");
+const pct = v => (v*100).toFixed(1) + "%";
 const SHORT = ["Entrepreneur", "Buying a home", "Consolidating debt", "Seasonal business"];
 const base = PERSONAS.map(p => ({...p}));
 let book = PERSONAS.map(p => ({...p}));
-let cur = 0, corrected = true, lastEvent = null;
+let cur = 0, mode = "corrected", lastEvent = null;
 const shockVals = {inc:30, sav:40, late:1};
 const probs = [55, 30, 70, 45, 20];
 const PART = {credit:["Credit score","var(--ink)"], income:["Income","var(--slate)"], debt:["Low debt","color-mix(in srgb,var(--slate) 55%,var(--bg))"], savings:["Savings","var(--ochre)"], late:["Clean payment history","color-mix(in srgb,var(--ochre) 50%,var(--bg))"]};
@@ -241,7 +269,7 @@ const EVENTS = [
 
 function renderTabs(){
   $("tabs").innerHTML = book.map((p,i) => {
-    const c = category(scoreOf(p, corrected));
+    const c = category(scoreOf(p, mode));
     return `<button class="tab" aria-pressed="${i===cur}" data-i="${i}"><b>${esc(p.name)} <span class="chip ${c}" style="display:inline-block;color:#fff">${c}</span></b><span>${SHORT[i]}</span></button>`;
   }).join("");
 }
@@ -269,11 +297,11 @@ const ro = new ResizeObserver(() => drawLadder(...ladderState));
 ro.observe($("ladderBox"));
 
 function pathCards(b){
-  const s = scoreOf(b, corrected), c = category(s);
+  const s = scoreOf(b, mode), c = category(s);
   const improve = c !== "Low", target = c === "High" ? 33 : 66;
   $("pathTitle").textContent = improve ? `To reach ${c==="High"?"medium":"low"} risk (above ${target})` : "Headroom before medium risk";
   return {target, html: LEVERS.map(lv => {
-    const r = leverMove(b, lv, target, corrected, improve), fmt = v => lv.money ? money(v) : Math.round(v);
+    const r = leverMove(b, lv, target, mode, improve), fmt = v => lv.money ? money(v) : Math.round(v);
     if (improve){
       if (r.kind==="ok") return `<div class="path"><b>${lv.verb}</b><p><strong style="color:var(--ink)">${{debt:"−",savings:"+",income:"+",credit:"+"}[lv.k]}${lv.money?money(r.change):r.change+" pts"}</strong> → ${fmt(r.value)}</p></div>`;
       if (r.kind==="wrong") return `<div class="path no"><b>${lv.verb}</b><p>Lowers the score (bug)</p></div>`;
@@ -286,15 +314,20 @@ function pathCards(b){
   }).join("")};
 }
 function renderDesk(){
-  const b = book[cur], s = scoreOf(b, corrected), c = category(s), o = scoreOf(b, !corrected);
+  const b = book[cur], s = scoreOf(b, mode), c = category(s);
+  const other = mode === "original" ? "corrected" : "original", o = scoreOf(b, other);
+  const w = CAL.weights;
+  $("modeNote").textContent = {original:"Simulation weights, with its bug: debt and late payments count as positives.",
+    corrected:"Simulation weights, bug fixed.",
+    calibrated:`Fitted to real defaults: payment history ${Math.round(w.late_payments*100)}%, income ${Math.round(w.annual_income*100)}%, debt payments ${Math.round(w.leverage*100)}%; credit score and savings keep 25% each.`}[mode];
   $("score").textContent = s.toFixed(1);
   $("cat").innerHTML = `<span class="chip ${c}" style="font-size:16px;padding:3px 12px">${c} risk</span>`;
-  $("ghost").textContent = `▵ ${corrected ? "Original" : "Corrected"} calculator: ${o.toFixed(1)}`;
-  $("figs").innerHTML = [["Debt-to-income", (dti(b)*100).toFixed(1)+"%"], ["Net liquid assets", money(nla(b))], ["Credit score", b.credit], ["Late payments", b.late]]
+  $("ghost").textContent = `▵ ${other === "original" ? "Original" : "Corrected"} calculator: ${o.toFixed(1)}`;
+  $("figs").innerHTML = [["2-yr default probability", pct(pd(b))], ["Expected loss", money(expectedLoss(b))], ["Debt-to-income", pct(dti(b))], ["Net liquid assets", money(nla(b))], ["Credit score", b.credit], ["Late payments", b.late]]
     .map(([k,v]) => `<div><small>${k}</small><strong>${v}</strong></div>`).join("");
-  const parts = contributions(b, corrected);
+  const parts = contributions(b, mode);
   $("bar").innerHTML = Object.entries(parts).map(([k,v]) => `<i style="width:${Math.max(v,0)}%;background:${PART[k][1]}" title="${PART[k][0]}: ${v.toFixed(1)}"></i>`).join("");
-  $("legend").innerHTML = Object.entries(parts).map(([k,v]) => `<span><i style="background:${PART[k][1]}"></i>${corrected||!["debt","late"].includes(k)?PART[k][0]:k==="debt"?"Debt (counted as positive)":"Late payments (counted as positive)"} ${v.toFixed(1)}</span>`).join("");
+  $("legend").innerHTML = Object.entries(parts).map(([k,v]) => `<span><i style="background:${PART[k][1]}"></i>${mode==="calibrated"&&k==="debt"?"Low debt payments":mode!=="original"||!["debt","late"].includes(k)?PART[k][0]:k==="debt"?"Debt (counted as positive)":"Late payments (counted as positive)"} ${v.toFixed(1)}</span>`).join("");
   const pc = pathCards(b);
   $("paths").innerHTML = pc.html;
   ladderState = [s, o, c==="Low" ? 66 : pc.target];
@@ -302,7 +335,7 @@ function renderDesk(){
 }
 function renderEvents(){
   $("events").innerHTML = EVENTS.map((e,i) => `<button class="ev" data-e="${i}"><b>${esc(e.t)}</b><span>${esc(book[e.p].name)} · ${esc(e.d)}</span><em class="${e.blind?"blind":""}">${e.blind?"Blind spot":"Moves the score"}</em></button>`).join("");
-  $("evBanner").innerHTML = lastEvent ? `<div class="banner"><b>${esc(lastEvent.t)}:</b> score ${lastEvent.before.toFixed(1)} → ${lastEvent.after.toFixed(1)} (${lastEvent.cat}). ${esc(lastEvent.say)} <button class="b" id="undo" style="margin-left:8px;min-height:36px">Undo</button></div>` : "";
+  $("evBanner").innerHTML = lastEvent ? `<div class="banner"><b>${esc(lastEvent.t)}:</b> score ${lastEvent.before.toFixed(1)} → ${lastEvent.after.toFixed(1)} (${lastEvent.cat}), default probability ${pct(lastEvent.pd0)} → ${pct(lastEvent.pd1)}. ${esc(lastEvent.say)} <button class="b" id="undo" style="margin-left:8px;min-height:36px">Undo</button></div>` : "";
 }
 const SHOCKS = [["inc","Income falls by","%",0,60],["sav","Savings fall by","%",0,80],["late","Extra late payments","",0,3]];
 function renderShock(){
@@ -312,13 +345,16 @@ function syncShock(){
   for (const [k,,u] of SHOCKS){ $("k-"+k).value = shockVals[k]; $("ko-"+k).textContent = shockVals[k]+u; }
 }
 function renderStress(){
-  let moved = 0;
+  let moved = 0, el0 = 0, el1 = 0;
   $("stress").innerHTML = book.map(b => {
-    const s0 = scoreOf(b, corrected), s1 = scoreOf(shock(b, shockVals.inc/100, shockVals.sav/100, shockVals.late), corrected);
+    const after = shock(b, shockVals.inc/100, shockVals.sav/100, shockVals.late);
+    const s0 = scoreOf(b, mode), s1 = scoreOf(after, mode);
+    el0 += expectedLoss(b); el1 += expectedLoss(after);
     const c0 = category(s0), c1 = category(s1); if (c0!==c1) moved++;
     const a = Math.min(s0,s1), z = Math.max(s0,s1);
-    return `<div class="srow"><b>${esc(b.name)}</b><div class="track"><div class="ln" style="left:${a}%;width:${z-a}%"></div><div class="d a" style="left:${s0}%"></div><div class="d" style="left:${s1}%;background:var(--ink)"></div></div><div class="res">${s0.toFixed(1)} → <b>${s1.toFixed(1)}</b> <span class="chip ${c1}">${c1}</span></div></div>`;
+    return `<div class="srow"><b>${esc(b.name)}</b><div class="track"><div class="ln" style="left:${a}%;width:${z-a}%"></div><div class="d a" style="left:${s0}%"></div><div class="d" style="left:${s1}%;background:var(--ink)"></div></div><div class="res">${s0.toFixed(1)} → <b>${s1.toFixed(1)}</b> <span class="chip ${c1}">${c1}</span><small>Default ${pct(pd(b))} → ${pct(pd(after))}</small></div></div>`;
   }).join("");
+  $("stressEL").textContent = `Expected loss across the book: ${money(el0)} → ${money(el1)}`;
   $("stressTitle").textContent = moved ? `${moved} of 4 borrowers drop a tier` : "No borrower drops a tier";
 }
 const RISKS = [...new Set(MATRIX.map(m => m.risk))];
@@ -346,15 +382,20 @@ function renderAll(){ renderTabs(); renderCtls(); renderDesk(); renderEvents(); 
 
 $("tabs").addEventListener("click", e => { const t = e.target.closest(".tab"); if (!t) return; cur = +t.dataset.i; lastEvent = null; renderAll(); });
 $("ctls").addEventListener("input", e => { const k = e.target.dataset.k; if (!k) return; book[cur][k] = +e.target.value; $("o-"+k).textContent = CTL.find(c=>c.k===k).fmt(book[cur][k]); renderTabs(); renderDesk(); renderStress(); });
-$("orig").addEventListener("change", e => { corrected = !e.target.checked; renderTabs(); renderDesk(); renderStress(); });
+$("modes").addEventListener("click", e => {
+  const t = e.target.closest("[data-mode]"); if (!t) return;
+  mode = t.dataset.mode;
+  for (const btn of $("modes").querySelectorAll("[data-mode]")) btn.setAttribute("aria-pressed", btn === t);
+  renderTabs(); renderDesk(); renderStress();
+});
 $("reset").addEventListener("click", () => { book[cur] = {...base[cur]}; lastEvent = null; renderAll(); });
 $("resetAll").addEventListener("click", () => { book = base.map(p => ({...p})); lastEvent = null; renderAll(); });
 $("events").addEventListener("click", e => {
   const t = e.target.closest(".ev"); if (!t) return;
-  const ev = EVENTS[+t.dataset.e], b = book[ev.p], before = scoreOf(b, corrected);
+  const ev = EVENTS[+t.dataset.e], b = book[ev.p], before = scoreOf(b, mode);
   const prev = {...b}; book[ev.p] = {...b, ...ev.fx(b)}; cur = ev.p;
-  const after = scoreOf(book[ev.p], corrected);
-  lastEvent = {...ev, before, after, cat:category(after), prev};
+  const after = scoreOf(book[ev.p], mode);
+  lastEvent = {...ev, before, after, cat:category(after), prev, pd0:pd(prev), pd1:pd(book[ev.p])};
   renderAll();
 });
 $("evBanner").addEventListener("click", e => { if (e.target.id!=="undo" || !lastEvent) return; book[lastEvent.p] = lastEvent.prev; lastEvent = null; renderAll(); });

@@ -24,14 +24,15 @@ The case asks you to *grade* each borrower. Risk Desk also works the scorecard *
 Everything in it comes from the case:
 
 - **Live scorecard.** Sliders for income, credit score, debt, savings and late payments, with the score on a risk ladder, debt-to-income, net liquid assets and each attribute's contribution.
-- **Original vs corrected calculator.** One switch shows the simulation's flaw in action: under the original calculator, paying down debt *lowers* a borrower's score.
+- **Real default probability.** Each borrower's two-year probability of default and expected loss, from the model fitted to 118,494 real borrowers (see the calibration section below).
+- **Three sets of weights.** Switch between the simulation's original calculator (where paying down debt *lowers* the score), the corrected one, and weights calibrated on real default data. The path to the next tier changes with each.
 - **Scenario events.** The six scenario questions as one-click events, with undo. The three the scorecard cannot see are flagged as blind spots.
-- **Stress the book.** Income, savings and late-payment shocks with presets for a mild downturn and a severe recession, showing which borrowers drop a tier.
+- **Stress the book.** Income, savings and late-payment shocks with presets for a mild downturn and a severe recession, showing which borrowers drop a tier, how each default probability moves, and total expected loss.
 - **Property risk.** Probability sliders for the five property risks drive the mitigation matrix live, with a count of how many risks call for capital spending (CapEx).
 
 What it reveals: **for Personas 2, 3 and 4, building savings is the only single lever that reaches low risk.** Paying off debt entirely, maximising income or a perfect credit score each falls short on its own. That is a property of the scorecard's design: savings carry a 25% weight, capped at $500k.
 
-**How it's built.** One self-contained HTML page with no libraries. `app/build.py` writes the persona data and mitigation matrix into it from the same CSVs the Python analysis uses, and [`tests/test_app.py`](tests/test_app.py) runs the page's model in Node to check that its scores, stress results and thresholds match the Python model exactly, and that every suggested path is the minimum change (one step less does not cross the tier line).
+**How it's built.** One self-contained HTML page with no libraries. `app/build.py` writes the persona data, mitigation matrix and fitted default model into it from the same files the Python analysis uses, and [`tests/test_app.py`](tests/test_app.py) runs the page's model in Node to check that its scores, default probabilities, stress results and thresholds match the Python model exactly, and that every suggested path is the minimum change (one step less does not cross the tier line).
 
 To open it locally: `python app/build.py`, then open `app/index.html` in a browser. To update the live page after a change: `bash app/publish_pages.sh`.
 
@@ -214,7 +215,7 @@ The PDs rank the personas in the same order as the written assessment, and they 
 │   └── publish_pages.sh         # pushes the page to GitHub Pages (gh-pages branch)
 ├── tests/
 │   ├── test_models.py           # 16 tests: score direction, thresholds, metrics
-│   ├── test_app.py              # 4 tests: the page's model matches the Python model
+│   ├── test_app.py              # 5 tests: the page's model matches the Python model
 │   └── test_calibration.py      # 8 tests: coefficient signs, AUC, PD ranking, refit
 ├── figures/
 ├── results/
