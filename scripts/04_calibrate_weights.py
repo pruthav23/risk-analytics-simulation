@@ -5,6 +5,8 @@ If data/external/cs-training.csv is present (download it from Kaggle's
 results/calibration.json is rewritten. Otherwise the saved results are used.
 """
 
+import sys
+
 import matplotlib.pyplot as plt
 
 from common import heading, save, set_style
@@ -67,7 +69,7 @@ def main():
     set_style()
     if calibration.RAW_PATH.exists():
         calibration.save(calibration.fit())
-        print(f"  refitted on {calibration.RAW_PATH.name}")
+        print(f"  refitted on {calibration.RAW_PATH.name}", file=sys.stderr)
     results = calibration.load()
 
     heading("1) MODEL FITTED TO REAL DEFAULT DATA")
