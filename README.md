@@ -13,6 +13,8 @@ Two risk problems, each turned into code that can be tested:
 
 ## Extension: Risk Desk, an interactive tool — [`app/`](app/)
 
+**Live: [pruthav23.github.io/risk-analytics-simulation](https://pruthav23.github.io/risk-analytics-simulation/)**
+
 *Added in November 2026, on top of the original case.*
 
 The case asks you to *grade* each borrower. Risk Desk also works the scorecard **backwards**: for each persona it finds the **smallest single change that moves them to the next risk tier**, such as how much debt to pay down, savings to build or credit-score points to gain. For a borrower already at low risk, it shows the **headroom**: how much savings, income or credit score they could lose before slipping to medium. Every persona in the case came to Goldman Sachs asking for advice, so this turns the scorecard into advice.
@@ -31,7 +33,7 @@ What it reveals: **for Personas 2, 3 and 4, building savings is the only single 
 
 **How it's built.** One self-contained HTML page with no libraries. `app/build.py` writes the persona data and mitigation matrix into it from the same CSVs the Python analysis uses, and [`tests/test_app.py`](tests/test_app.py) runs the page's model in Node to check that its scores, stress results and thresholds match the Python model exactly, and that every suggested path is the minimum change (one step less does not cross the tier line).
 
-To open it locally: `python app/build.py`, then open `app/index.html` in a browser.
+To open it locally: `python app/build.py`, then open `app/index.html` in a browser. To update the live page after a change: `bash app/publish_pages.sh`.
 
 ---
 
@@ -167,7 +169,8 @@ The workbook's lookup formulas (which pull a justification for the chosen strate
 ├── app/                         # Risk Desk interactive tool
 │   ├── template.html            # page source
 │   ├── build.py                 # fills in the CSV data -> index.html
-│   └── index.html               # built page, opens in any browser
+│   ├── index.html               # built page, opens in any browser
+│   └── publish_pages.sh         # pushes the page to GitHub Pages (gh-pages branch)
 ├── tests/
 │   ├── test_models.py           # 16 tests: score direction, thresholds, metrics
 │   └── test_app.py              # 4 tests: the page's model matches the Python model
